@@ -8,6 +8,12 @@ import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/f
 import { nanoid } from "nanoid";
 import { PlusCircle, X } from "lucide-react";
 
+interface Option {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
 interface MCQOptionsProps {
   control: Control<any>;
   isMultipleChoice: boolean;
@@ -47,7 +53,7 @@ const MCQOptions = ({ control, isMultipleChoice }: MCQOptionsProps) => {
           <FormItem key={field.id} className="flex items-center space-x-3">
             <FormControl>
               <Checkbox 
-                checked={field.isCorrect} 
+                checked={(field as unknown as Option).isCorrect} 
                 onCheckedChange={(checked) => {
                   const value = typeof checked === "boolean" ? checked : false;
                   
@@ -55,22 +61,34 @@ const MCQOptions = ({ control, isMultipleChoice }: MCQOptionsProps) => {
                     // For single choice, uncheck all other options
                     for (let i = 0; i < fields.length; i++) {
                       if (i !== index) {
-                        control._formValues.options[i].isCorrect = false;
+                        const options = control._formValues.options as Option[];
+                        if (options && options[i]) {
+                          options[i].isCorrect = false;
+                        }
                       }
                     }
                   }
                   
-                  control._formValues.options[index].isCorrect = value;
-                  control._updateFormState({ name: `options.${index}.isCorrect` });
+                  const options = control._formValues.options as Option[];
+                  if (options && options[index]) {
+                    options[index].isCorrect = value;
+                  }
+                  
+                  // Update the form state
+                  control._updateFormState({ isDirty: true });
                 }} 
               />
             </FormControl>
             <Input
-              defaultValue={field.text}
+              defaultValue={(field as unknown as Option).text}
               className="flex-1"
               onChange={(e) => {
-                control._formValues.options[index].text = e.target.value;
-                control._updateFormState({ name: `options.${index}.text` });
+                const options = control._formValues.options as Option[];
+                if (options && options[index]) {
+                  options[index].text = e.target.value;
+                }
+                // Update the form state
+                control._updateFormState({ isDirty: true });
               }}
             />
             <Button 

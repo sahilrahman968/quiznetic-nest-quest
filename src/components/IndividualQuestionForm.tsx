@@ -12,7 +12,7 @@ import MCQOptions from "@/components/MCQOptions";
 import EvaluationRubric from "@/components/EvaluationRubric";
 import SyllabusMapping from "@/components/SyllabusMapping";
 import ImageUpload from "@/components/ImageUpload";
-import { Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
+import { Option, Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 
 const questionSchema = z.object({
@@ -117,6 +117,12 @@ const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormP
         ...data,
         createdBy: teacher,
         questionType: [data.questionType],
+        // Ensure options have required properties
+        options: data.options?.map(opt => ({
+          id: opt.id || '',
+          text: opt.text || '',
+          isCorrect: opt.isCorrect || false
+        }))
       };
 
       // Submit based on question type
