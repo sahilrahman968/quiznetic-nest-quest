@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Question, createParentQuestion, getLoggedInTeacher } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import IndividualQuestionForm from "./IndividualQuestionForm";
+import ImageUpload from "./ImageUpload";
 
 const parentQuestionSchema = z.object({
   questionTitle: z.string().min(1, "Parent question title is required"),
@@ -121,6 +122,20 @@ const NestedQuestionForm = () => {
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="images"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Images</FormLabel>
+                    <FormControl>
+                      <ImageUpload fieldName="images" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <Button type="submit" className="w-full">
                 Create Parent Question
               </Button>
@@ -134,6 +149,19 @@ const NestedQuestionForm = () => {
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">Parent Question</h3>
                 <p className="text-gray-700">{parentQuestion.questionTitle}</p>
+                {parentQuestion.images && parentQuestion.images.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                    {parentQuestion.images.map((imageKey, index) => (
+                      <div key={index} className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/images/${imageKey}`}
+                          alt={`Image ${index + 1}`}
+                          className="object-contain w-full h-full"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

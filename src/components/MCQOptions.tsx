@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { Control, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Option } from "@/services/api";
+import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { nanoid } from "nanoid";
+import { PlusCircle, X } from "lucide-react";
 
 interface MCQOptionsProps {
   control: Control<any>;
@@ -18,74 +19,96 @@ const MCQOptions = ({ control, isMultipleChoice }: MCQOptionsProps) => {
     name: "options",
   });
 
-  const addOption = () => {
-    append({ id: String(fields.length + 1), text: "", isCorrect: false });
+  const [newOptionText, setNewOptionText] = useState("");
+
+  const handleAddOption = () => {
+    if (!newOptionText.trim()) return;
+    
+    append({
+      id: nanoid(),
+      text: newOptionText,
+      isCorrect: false,
+    });
+    
+    setNewOptionText("");
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Options</h3>
-        <Button type="button" onClick={addOption} size="sm">
-          Add Option
-        </Button>
-      </div>
-
-      {fields.map((field, index) => (
-        <div key={field.id} className="flex items-start space-x-2 border p-3 rounded-md">
-          <FormField
-            control={control}
-            name={`options.${index}.isCorrect`}
-            render={({ field: checkboxField }) => (
-              <FormItem className="flex items-start space-x-3 space-y-0 mt-2">
-                <FormControl>
-                  <Checkbox 
-                    checked={checkboxField.value}
-                    onCheckedChange={(checked) => {
-                      // If single choice MCQ, uncheck all others
-                      if (!isMultipleChoice && checked) {
-                        // We need to get all current options and uncheck them
-                        const currentOptions = control._formValues.options || [];
-                        currentOptions.forEach((_, i: number) => {
-                          if (i !== index) {
-                            control._fields.options.update(i, { isCorrect: false });
-                          }
-                        });
+      <FormLabel className="text-base">Options</FormLabel>
+      <p className="text-sm text-gray-500">
+        {isMultipleChoice 
+          ? "Add options and mark all correct answers (multiple can be selected)" 
+          : "Add options and mark one as the correct answer"}
+      </p>
+      
+      <div className="space-y-3">
+        {fields.map((field, index) => (
+          <FormItem key={field.id} className="flex items-center space-x-3">
+            <FormControl>
+              <Checkbox 
+                checked={field.isCorrect} 
+                onCheckedChange={(checked) => {
+                  const value = typeof checked === "boolean" ? checked : false;
+                  
+                  if (!isMultipleChoice && value) {
+                    // For single choice, uncheck all other options
+                    for (let i = 0; i < fields.length; i++) {
+                      if (i !== index) {
+                        control._formValues.options[i].isCorrect = false;
                       }
-                      checkboxField.onChange(checked);
-                    }}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+                    }
+                  }
+                  
+                  control._formValues.options[index].isCorrect = value;
+                  control._updateFormState({ name: `options.${index}.isCorrect` });
+                }} 
+              />
+            </FormControl>
+            <Input
+              defaultValue={field.text}
+              className="flex-1"
+              onChange={(e) => {
+                control._formValues.options[index].text = e.target.value;
+                control._updateFormState({ name: `options.${index}.text` });
+              }}
+            />
+            <Button 
+              type="button"
+              size="icon"
+              variant="ghost" 
+              onClick={() => remove(index)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </FormItem>
+        ))}
 
-          <FormField
-            control={control}
-            name={`options.${index}.text`}
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormControl>
-                  <Input placeholder={`Option ${index + 1}`} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+        <div className="flex items-center space-x-2">
+          <Input
+            placeholder="Add a new option..."
+            value={newOptionText}
+            onChange={(e) => setNewOptionText(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddOption();
+              }
+            }}
           />
-
           <Button 
-            type="button" 
-            variant="destructive" 
-            size="sm"
-            onClick={() => remove(index)}
+            type="button"
+            onClick={handleAddOption}
+            size="icon"
+            variant="outline"
           >
-            Remove
+            <PlusCircle className="h-4 w-4" />
           </Button>
         </div>
-      ))}
+      </div>
 
       {fields.length === 0 && (
-        <p className="text-sm text-muted-foreground">No options added yet. Click "Add Option" to create options.</p>
+        <FormMessage>At least one option is required</FormMessage>
       )}
     </div>
   );

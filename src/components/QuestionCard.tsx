@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Question } from "@/services/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 
 interface QuestionCardProps {
@@ -12,6 +12,27 @@ interface QuestionCardProps {
 
 const QuestionCard = ({ question }: QuestionCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const renderImages = (images: string[] | undefined) => {
+    if (!images || images.length === 0) return null;
+    
+    return (
+      <div className="mt-4">
+        <h4 className="font-medium mb-2">Images:</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {images.map((imageKey, index) => (
+            <div key={index} className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+              <img 
+                src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/images/${imageKey}`}
+                alt={`Image ${index + 1}`}
+                className="object-contain w-full h-full"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const renderOptions = (options: Question["options"]) => {
     if (!options || options.length === 0) return null;
@@ -74,6 +95,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
                   </div>
                 </div>
 
+                {renderImages(child.images)}
                 {renderOptions(child.options)}
                 {renderEvaluationRubric(child.evaluationRubric)}
 
@@ -121,6 +143,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
               ))}
             </div>
 
+            {renderImages(question.images)}
             {renderOptions(question.options)}
             {renderEvaluationRubric(question.evaluationRubric)}
 

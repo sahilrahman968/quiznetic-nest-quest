@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import MCQOptions from "@/components/MCQOptions";
 import EvaluationRubric from "@/components/EvaluationRubric";
 import SyllabusMapping from "@/components/SyllabusMapping";
+import ImageUpload from "@/components/ImageUpload";
 import { Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 
@@ -273,6 +274,20 @@ const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormP
                   <SelectItem value="AI_GENERATED">AI Generated</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="images"
+          render={() => (
+            <FormItem>
+              <FormLabel>Images</FormLabel>
+              <FormControl>
+                <ImageUpload fieldName="images" />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
