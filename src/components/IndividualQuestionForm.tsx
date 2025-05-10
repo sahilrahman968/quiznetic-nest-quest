@@ -1,315 +1,311 @@
-
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useState } from "react";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import MCQOptions from "@/components/MCQOptions";
-import EvaluationRubric from "@/components/EvaluationRubric";
-import SyllabusMapping from "@/components/SyllabusMapping";
-import ImageUpload from "@/components/ImageUpload";
-import { Option, Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, X } from "lucide-react";
+import { nanoid } from "nanoid";
+import { toast } from "@/components/ui/sonner";
+import { createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
 
 const questionSchema = z.object({
-  questionTitle: z.string().min(1, "Question title is required"),
-  marks: z.number().min(1, "Marks must be at least 1"),
-  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
   questionType: z.enum(["SINGLE_CORRECT_MCQ", "MULTIPLE_CORRECT_MCQ", "SUBJECTIVE"]),
+  question: z.string().min(1, { message: "Question is required" }),
+  explanation: z.string().optional(),
   options: z.array(
     z.object({
       id: z.string(),
-      text: z.string().min(1, "Option text is required"),
+      text: z.string().min(1, { message: "Option text is required" }),
       isCorrect: z.boolean(),
     })
   ).optional(),
   evaluationRubric: z.array(
     z.object({
-      criterion: z.string().min(1, "Criterion is required"),
-      weight: z.number().min(1, "Weight must be at least 1"),
+      criterion: z.string().min(1, { message: "Criterion is required" }),
+      weight: z.number().min(0, { message: "Weight must be at least 0" }).max(100, { message: "Weight must be at most 100" }),
     })
   ).optional(),
-  source: z.enum(["AI_GENERATED", "USER_GENERATED"]),
-  images: z.array(z.string()).default([]),
-  syllabusMapping: z.object({
-    board: z.object({
-      id: z.string(),
-      name: z.string(),
-    }),
-    class: z.object({
-      id: z.string(),
-      name: z.string(),
-    }),
-    subject: z.object({
-      id: z.string(),
-      name: z.string(),
-    }),
-    chapter: z.array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-      })
-    ),
-    topic: z.array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-      })
-    ),
-  }),
-  parentId: z.string().optional(),
 });
 
-type QuestionFormData = z.infer<typeof questionSchema>;
+// Ensure options are complete
+const ensureCompleteOptions = (options: any[]) => {
+  if (!options) return [];
+  return options.map(opt => ({
+    id: opt.id || nanoid(),
+    text: opt.text || '',
+    isCorrect: !!opt.isCorrect
+  }));
+};
 
-interface IndividualQuestionFormProps {
-  parentId?: string;
-  onSuccess?: () => void;
-}
+// Ensure evaluation rubric items are valid
+const ensureValidEvaluationRubric = (rubric: any[]) => {
+  if (!rubric) return [];
+  return rubric.map(item => ({
+    criterion: item.criterion || '',
+    weight: item.weight || 0
+  }));
+};
 
-const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormProps) => {
-  const form = useForm<QuestionFormData>({
+const IndividualQuestionForm = () => {
+  const [isMultipleChoice, setIsMultipleChoice] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<z.infer<typeof questionSchema>>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
-      questionTitle: "",
-      marks: 1,
-      difficulty: "MEDIUM",
-      questionType: "SUBJECTIVE",
-      options: [],
-      evaluationRubric: [],
-      source: "USER_GENERATED",
-      images: [],
-      parentId: parentId,
+      questionType: "SINGLE_CORRECT_MCQ",
+      question: "",
+      explanation: "",
+      options: [{ id: nanoid(), text: "", isCorrect: false }],
+      evaluationRubric: [{ criterion: "", weight: 0 }],
     },
   });
 
-  const questionType = form.watch("questionType");
-  const isMCQ = questionType === "SINGLE_CORRECT_MCQ" || questionType === "MULTIPLE_CORRECT_MCQ";
-  const isMultipleChoice = questionType === "MULTIPLE_CORRECT_MCQ";
+  const { control } = form;
 
-  useEffect(() => {
-    // Reset options or evaluation rubric when question type changes
-    if (isMCQ) {
-      form.setValue("evaluationRubric", []);
-    } else {
-      form.setValue("options", []);
-    }
-  }, [questionType, form]);
+  const handleQuestionTypeChange = (value: "SINGLE_CORRECT_MCQ" | "MULTIPLE_CORRECT_MCQ" | "SUBJECTIVE") => {
+    form.setValue("questionType", value);
+    setIsMultipleChoice(value === "MULTIPLE_CORRECT_MCQ");
+  };
 
-  const onSubmit = async (data: QuestionFormData) => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "evaluationRubric",
+  });
+
+  const handleAddCriterion = () => {
+    append({ criterion: "", weight: 0 });
+  };
+
+  const handleRemoveCriterion = (index: number) => {
+    remove(index);
+  };
+
+  const isSubjective = form.watch("questionType") === "SUBJECTIVE";
+
+  const onSubmit = async (data: z.infer<typeof questionSchema>) => {
     try {
-      const teacher = getLoggedInTeacher();
-      if (!teacher) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to create questions",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Prepare the question data
-      const questionData: Partial<Question> = {
+      setIsSubmitting(true);
+      const teacher = await getLoggedInTeacher();
+      
+      // Prepare question data with proper types
+      const questionData = {
         ...data,
         createdBy: teacher,
         questionType: [data.questionType],
-        // Ensure options have required properties
-        options: data.options?.map(opt => ({
-          id: opt.id || '',
-          text: opt.text || '',
-          isCorrect: opt.isCorrect || false
-        }))
+        options: ensureCompleteOptions(data.options),
+        evaluationRubric: ensureValidEvaluationRubric(data.evaluationRubric),
       };
 
-      // Submit based on question type
-      let response;
-      if (isMCQ) {
-        // Validate that at least one option is marked as correct
-        const hasCorrectOption = data.options?.some(option => option.isCorrect);
-        if (!hasCorrectOption) {
+      if (data.questionType === "SINGLE_CORRECT_MCQ" || data.questionType === "MULTIPLE_CORRECT_MCQ") {
+        if (!data.options || data.options.length < 2) {
           toast({
             title: "Error",
-            description: "At least one option must be marked as correct",
+            description: "MCQ questions must have at least two options.",
             variant: "destructive",
           });
           return;
         }
-        response = await createMCQQuestion(questionData);
-      } else {
-        // Validate that at least one evaluation criterion is added
-        if (!data.evaluationRubric || data.evaluationRubric.length === 0) {
+
+        const correctOptions = data.options.filter((option) => option.isCorrect);
+        if (correctOptions.length === 0) {
           toast({
             title: "Error",
-            description: "At least one evaluation criterion must be added",
+            description: "MCQ questions must have at least one correct option.",
             variant: "destructive",
           });
           return;
         }
-        response = await createSubjectiveQuestion(questionData);
+
+        await createMCQQuestion(questionData);
+        toast({
+          title: "Success",
+          description: "MCQ question created successfully!",
+        });
+      } else if (data.questionType === "SUBJECTIVE") {
+        await createSubjectiveQuestion(questionData);
+        toast({
+          title: "Success",
+          description: "Subjective question created successfully!",
+        });
       }
 
-      toast({
-        title: "Success",
-        description: "Question created successfully",
-      });
-      
-      // Reset the form
-      form.reset({
-        questionTitle: "",
-        marks: 1,
-        difficulty: "MEDIUM",
-        questionType: "SUBJECTIVE",
-        options: [],
-        evaluationRubric: [],
-        source: "USER_GENERATED",
-        images: [],
-        parentId: parentId,
-      });
-
-      // Call the success callback if provided
-      if (onSuccess) {
-        onSuccess();
-      }
+      form.reset();
     } catch (error) {
-      console.error("Error creating question:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create question. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="questionTitle"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Question Title</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Enter your question here..." {...field} className="min-h-24" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <Card className="futuristic-card">
+      <CardHeader>
+        <CardTitle className="text-lg">Create a New Question</CardTitle>
+        <CardDescription>Fill in the details below to create your question.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="questionType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Question Type</FormLabel>
+                  <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      handleQuestionTypeChange(value as "SINGLE_CORRECT_MCQ" | "MULTIPLE_CORRECT_MCQ" | "SUBJECTIVE");
+                    }} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a question type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="SINGLE_CORRECT_MCQ">Single Correct MCQ</SelectItem>
+                      <SelectItem value="MULTIPLE_CORRECT_MCQ">Multiple Correct MCQ</SelectItem>
+                      <SelectItem value="SUBJECTIVE">Subjective</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="marks"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Marks</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    min={1} 
-                    {...field} 
-                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="difficulty"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Difficulty</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+            <FormField
+              control={form.control}
+              name="question"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Question</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select difficulty" />
-                    </SelectTrigger>
+                    <Textarea placeholder="Enter your question here..." {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="EASY">Easy</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HARD">Hard</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormDescription>Write the question you want to ask.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="questionType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Question Type</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+            {form.watch("questionType") !== "SUBJECTIVE" && (
+              <MCQOptions control={control} isMultipleChoice={isMultipleChoice} />
+            )}
+
+            {isSubjective && (
+              <div className="space-y-4">
+                <FormLabel className="text-base">Evaluation Rubric</FormLabel>
+                <p className="text-sm text-gray-500">Add criteria for evaluating the subjective question.</p>
+                
+                <div className="space-y-3">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="flex items-center space-x-3">
+                      <FormField
+                        control={control}
+                        name={`evaluationRubric.${index}.criterion`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Criterion {index + 1}</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Criterion" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={control}
+                        name={`evaluationRubric.${index}.weight`}
+                        render={({ field }) => (
+                          <FormItem className="w-24">
+                            <FormLabel>Weight (%)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="Weight"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = Math.max(0, Math.min(100, Number(e.target.value)));
+                                  field.onChange(value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button 
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveCriterion(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <Button 
+                    type="button"
+                    onClick={handleAddCriterion}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Criterion
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <FormField
+              control={form.control}
+              name="explanation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Explanation</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select question type" />
-                    </SelectTrigger>
+                    <Textarea placeholder="Enter the explanation here..." {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="SINGLE_CORRECT_MCQ">Single Correct MCQ</SelectItem>
-                    <SelectItem value="MULTIPLE_CORRECT_MCQ">Multiple Correct MCQ</SelectItem>
-                    <SelectItem value="SUBJECTIVE">Subjective</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                  <FormDescription>Provide an explanation for the correct answer.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="source"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Source</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select source" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="USER_GENERATED">User Generated</SelectItem>
-                  <SelectItem value="AI_GENERATED">AI Generated</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="images"
-          render={() => (
-            <FormItem>
-              <FormLabel>Images</FormLabel>
-              <FormControl>
-                <ImageUpload fieldName="images" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {isMCQ && <MCQOptions control={form.control} isMultipleChoice={isMultipleChoice} />}
-
-        {!isMCQ && <EvaluationRubric control={form.control} />}
-
-        <SyllabusMapping control={form.control} />
-
-        <Button type="submit" className="w-full">
-          Create Question
-        </Button>
-      </form>
-    </Form>
+            <Button type="submit" disabled={isSubmitting} className="button-neon">
+              {isSubmitting ? "Submitting..." : "Create Question"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
 
