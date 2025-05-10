@@ -104,11 +104,9 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
             )}
           </div>
           {question.hasChild && (
-            <CollapsibleTrigger asChild onClick={() => setIsOpen(!isOpen)}>
-              <Button variant="ghost" size="sm">
-                {isOpen ? "Hide Details" : "Show Details"}
-              </Button>
-            </CollapsibleTrigger>
+            <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? "Hide Details" : "Show Details"}
+            </Button>
           )}
         </div>
       </CardHeader>
@@ -139,7 +137,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
         </div>
 
         {question.hasChild && (
-          <Collapsible open={isOpen}>
+          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <CollapsibleContent>
               {renderChildQuestions(question.childQuestions || [])}
             </CollapsibleContent>
