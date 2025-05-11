@@ -3,14 +3,10 @@ import { useFieldArray, Control } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { EvaluationRubric as EvaluationRubricType } from "@/services/api";
 
 interface EvaluationRubricProps {
   control: Control<any>;
-}
-
-interface EvaluationCriterion {
-  criterion: string;
-  weight: number;
 }
 
 const EvaluationRubric = ({ control }: EvaluationRubricProps) => {

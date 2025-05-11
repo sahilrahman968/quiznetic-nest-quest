@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getUploadUrl } from "@/services/api";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useFormContext } from "react-hook-form";
 import { Image } from "lucide-react";
 
@@ -25,10 +25,10 @@ const ImageUpload = ({ fieldName }: ImageUploadProps) => {
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
         // Get presigned URL from the backend
-        const { uploadUrl, key } = await getUploadUrl();
+        const { url, key } = await getUploadUrl();
         
         // Upload the file to S3 using the presigned URL
-        const uploadResponse = await fetch(uploadUrl, {
+        const uploadResponse = await fetch(url, {
           method: "PUT",
           body: file,
           headers: {
@@ -48,10 +48,17 @@ const ImageUpload = ({ fieldName }: ImageUploadProps) => {
       // Update the form with new image keys
       setValue(fieldName, [...currentImages, ...uploadedKeys]);
       
-      toast(`${uploadedKeys.length} image(s) uploaded successfully`);
+      toast({
+        title: "Success",
+        description: `${uploadedKeys.length} image(s) uploaded successfully`,
+      });
     } catch (error) {
       console.error("Error uploading images:", error);
-      toast("Failed to upload images. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
       // Clear the input

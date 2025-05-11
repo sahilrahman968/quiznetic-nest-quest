@@ -9,8 +9,8 @@ const Index = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <Card className="w-full max-w-md chatgpt-card">
+    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Question Management System</CardTitle>
           <CardDescription>Create and manage questions for exams and assessments</CardDescription>
@@ -27,15 +27,15 @@ const Index = () => {
         <CardFooter>
           {isAuthenticated ? (
             <div className="flex gap-4 w-full">
-              <Button onClick={() => navigate("/questions")} className="flex-1 chatgpt-button">
+              <Button onClick={() => navigate("/questions")} className="flex-1">
                 Question Bank
               </Button>
-              <Button onClick={() => navigate("/create-question")} className="flex-1 chatgpt-button">
+              <Button onClick={() => navigate("/create-question")} className="flex-1">
                 Create Question
               </Button>
             </div>
           ) : (
-            <Button onClick={() => navigate("/login")} className="w-full chatgpt-button">
+            <Button onClick={() => navigate("/login")} className="w-full">
               Login to Get Started
             </Button>
           )}

@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Teacher, isAuthenticated, getLoggedInTeacher } from "@/services/api";
+import { Teacher, isAuthenticated as checkAuth, getLoggedInTeacher } from "@/services/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const checkAuthStatus = () => {
-      const authStatus = isAuthenticated();
+      const authStatus = checkAuth();
       setIsAuth(authStatus);
       
       if (authStatus) {

@@ -83,11 +83,11 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
                   <div className="flex items-center gap-2">
                     <p className="font-medium">Q: {child.questionTitle}</p>
                     <Badge variant="outline">Marks: {child.marks}</Badge>
-                    {child.difficulty && <Badge variant="outline">{child.difficulty}</Badge>}
+                    <Badge variant="outline">{child.difficulty}</Badge>
                   </div>
 
                   <div className="flex gap-2 mt-2">
-                    {Array.isArray(child.questionType) && child.questionType.map(type => (
+                    {child.questionType.map(type => (
                       <Badge key={type} className="bg-blue-100 text-blue-800 border-blue-300">
                         {type.replace(/_/g, " ")}
                       </Badge>
@@ -100,7 +100,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
                 {renderEvaluationRubric(child.evaluationRubric)}
 
                 <div className="text-sm text-gray-500">
-                  Created by: {child.createdBy?.name || "Unknown"} | Source: {child.source || "Unknown"}
+                  Created by: {child.createdBy?.name || "Unknown"} | Source: {child.source}
                 </div>
               </div>
             </CardContent>
@@ -121,7 +121,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
             ) : (
               <div className="flex gap-2 mt-1">
                 <Badge variant="outline">Marks: {question.marks}</Badge>
-                {question.difficulty && <Badge variant="outline">{question.difficulty}</Badge>}
+                <Badge variant="outline">{question.difficulty}</Badge>
               </div>
             )}
           </div>
@@ -136,7 +136,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
         {!question.hasChild && (
           <>
             <div className="flex gap-2 my-2">
-              {Array.isArray(question.questionType) && question.questionType.map(type => (
+              {question.questionType.map(type => (
                 <Badge key={type} className="bg-blue-100 text-blue-800 border-blue-300">
                   {type.replace(/_/g, " ")}
                 </Badge>
@@ -156,7 +156,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
         )}
 
         <div className="text-sm text-gray-500 mt-2">
-          Created by: {question.createdBy?.name || "Unknown"} | Source: {question.source || "Unknown"}
+          Created by: {question.createdBy?.name || "Unknown"} | Source: {question.source}
         </div>
 
         {question.hasChild && (

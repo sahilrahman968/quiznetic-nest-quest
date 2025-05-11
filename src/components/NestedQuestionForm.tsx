@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Question, createParentQuestion, getLoggedInTeacher } from "@/services/api";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import IndividualQuestionForm from "./IndividualQuestionForm";
 import ImageUpload from "./ImageUpload";
 
@@ -38,7 +38,11 @@ const NestedQuestionForm = () => {
     try {
       const teacher = getLoggedInTeacher();
       if (!teacher) {
-        toast("You must be logged in to create questions");
+        toast({
+          title: "Error",
+          description: "You must be logged in to create questions",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -50,7 +54,10 @@ const NestedQuestionForm = () => {
       const response = await createParentQuestion(questionData);
       setParentQuestion(response);
       
-      toast("Parent question created successfully");
+      toast({
+        title: "Success",
+        description: "Parent question created successfully",
+      });
 
       // Reset the form
       form.reset();
@@ -61,7 +68,10 @@ const NestedQuestionForm = () => {
 
   const handleChildQuestionSuccess = () => {
     setChildQuestionsCount(prev => prev + 1);
-    toast("Child question added successfully");
+    toast({
+      title: "Success",
+      description: "Child question added successfully",
+    });
   };
 
   const startNewNestedQuestion = () => {

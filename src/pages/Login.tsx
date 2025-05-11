@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { login } from "@/services/api";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,19 +38,21 @@ const Login = () => {
       const response = await login(data.email, data.password);
       setAuthStatus(true);
       setTeacher({ id: response.teacher.id, name: response.teacher.name });
-      toast("Login Successful");
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${response.teacher.name}!`,
+      });
       navigate("/questions");
     } catch (error) {
       console.error(error);
-      toast("Login Failed - Invalid email or password");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh]">
-      <Card className="w-full max-w-md chatgpt-card">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Question Management System</CardTitle>
           <CardDescription>Login to your account to continue</CardDescription>
@@ -65,7 +67,7 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="john.doe@example.com" {...field} className="chatgpt-input" />
+                      <Input placeholder="john.doe@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -78,13 +80,13 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} className="chatgpt-input" />
+                      <Input type="password" placeholder="******" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full chatgpt-button" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
