@@ -1,160 +1,173 @@
-
 import { toast } from "sonner";
 
-// Base URL for API
-const API_URL = "https://api.example.com"; // Replace with your actual API URL
+const API_BASE_URL = "http://localhost:3001";
 
-// Type for EvaluationRubric
-export interface EvaluationRubric {
-  criterion: string;
-  weight: number;
-}
-
-// Type for SyllabusMapping
-export interface SyllabusMapping {
-  subject?: string;
-  topic?: string;
-  subtopic?: string;
-  difficulty?: string;
-}
-
-// Type for an option in a MCQ
-export interface Option {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-}
-
-// Teacher type
 export interface Teacher {
   id: string;
   name: string;
 }
 
-// Question type
-export interface Question {
-  id: string;
-  questionType: ("SINGLE_CORRECT_MCQ" | "MULTIPLE_CORRECT_MCQ" | "SUBJECTIVE")[];
-  question: string;
-  explanation?: string;
-  options?: Option[];
-  createdBy: Teacher;
-  source?: "AI_GENERATED" | "USER_GENERATED";
-  difficulty?: "EASY" | "MEDIUM" | "HARD";
-  tags?: string[];
-  evaluationRubric?: EvaluationRubric[];
-  syllabusMapping?: SyllabusMapping;
-  images?: string[];
-  childQuestions?: Question[];
-}
+export const login = async (
+  email: string,
+  password: string
+): Promise<{ teacher: Teacher }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-// Mock data and functions for testing
-let loggedInTeacher: Teacher | null = {
-  id: "teacher-123",
-  name: "John Doe"
+    if (!response.ok) {
+      throw new Error("Login failed");
+    }
+
+    const data = await response.json();
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("teacher", JSON.stringify(data.teacher));
+    return data;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
 };
 
-// Check if user is authenticated
-export function isAuthenticated(): boolean {
-  // Mock authentication check - in a real app, this would check for a valid token
-  return loggedInTeacher !== null;
+export const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("teacher");
+  toast("Logged out successfully!");
+};
+
+export const getQuestions = async (): Promise<Question[]> => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/questions`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch questions");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching questions:", error);
+    throw error;
+  }
+};
+
+export const createQuestion = async (questionData: any): Promise<Question> => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/questions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(questionData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create question");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating question:", error);
+    throw error;
+  }
+};
+
+export const uploadFile = async (file: File): Promise<{ uploadUrl: string; fileUrl: string }> => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: file,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload file");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    throw error;
+  }
+};
+
+// Add these function exports to solve the build errors
+export function isAuthenticated() {
+  const token = localStorage.getItem('token');
+  return !!token;
 }
 
-// Login function
-export async function login(email: string, password: string): Promise<{ teacher: Teacher }> {
-  // Mock login logic
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (email && password) {
-        loggedInTeacher = { id: "teacher-123", name: "John Doe" };
-        resolve({ teacher: loggedInTeacher });
-      } else {
-        reject(new Error("Invalid credentials"));
-      }
-    }, 500);
-  });
+export function getLoggedInTeacher() {
+  const teacherData = localStorage.getItem('teacher');
+  return teacherData ? JSON.parse(teacherData) : null;
 }
 
-// Logout function
-export function logout() {
-  // Mock logout logic
-  loggedInTeacher = null;
-  toast("Logged out successfully");
+export function getUploadUrl() {
+  // Mock implementation
+  return Promise.resolve({ uploadUrl: 'https://example.com/upload', fileUrl: 'https://example.com/file.jpg' });
 }
 
-// Get logged in teacher
-export function getLoggedInTeacher(): Teacher | null {
-  return loggedInTeacher;
+export interface SyllabusItem {
+  id: string;
+  name: string;
 }
 
-// Create an MCQ question
-export async function createMCQQuestion(questionData: Partial<Question>): Promise<Question> {
-  // Mock creating MCQ question
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: `question-${Date.now()}`,
-        ...questionData,
-      } as Question);
-    }, 500);
-  });
+export function fetchBoards(): Promise<SyllabusItem[]> {
+  return Promise.resolve([{ id: '1', name: 'CBSE' }, { id: '2', name: 'ICSE' }]);
 }
 
-// Create a subjective question
-export async function createSubjectiveQuestion(questionData: Partial<Question>): Promise<Question> {
-  // Mock creating subjective question
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: `question-${Date.now()}`,
-        ...questionData,
-      } as Question);
-    }, 500);
-  });
+export function fetchClasses(): Promise<SyllabusItem[]> {
+  return Promise.resolve([{ id: '1', name: 'Class 10' }, { id: '2', name: 'Class 12' }]);
 }
 
-// Upload image function
-export async function uploadImage(file: File): Promise<string> {
-  // Mock image upload
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const imageUrl = `https://example.com/images/${file.name}`;
-      resolve(imageUrl);
-    }, 1000);
-  });
+export function fetchSubjects(): Promise<SyllabusItem[]> {
+  return Promise.resolve([{ id: '1', name: 'Mathematics' }, { id: '2', name: 'Science' }]);
 }
 
-// Get questions
-export async function getQuestions(): Promise<Question[]> {
-  // Mock getting questions
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: "question-1",
-          questionType: ["SINGLE_CORRECT_MCQ"],
-          question: "What is React?",
-          options: [
-            { id: "opt-1", text: "A JavaScript library", isCorrect: true },
-            { id: "opt-2", text: "A programming language", isCorrect: false },
-          ],
-          createdBy: loggedInTeacher as Teacher,
-          difficulty: "MEDIUM",
-          tags: ["React", "JavaScript"],
-        },
-        {
-          id: "question-2",
-          questionType: ["SUBJECTIVE"],
-          question: "Explain the concept of virtual DOM in React.",
-          createdBy: loggedInTeacher as Teacher,
-          difficulty: "HARD",
-          tags: ["React", "Virtual DOM"],
-          evaluationRubric: [
-            { criterion: "Explanation", weight: 60 },
-            { criterion: "Examples", weight: 40 },
-          ],
-        }
-      ] as Question[]);
-    }, 500);
-  });
+export function fetchChapters(): Promise<SyllabusItem[]> {
+  return Promise.resolve([{ id: '1', name: 'Algebra' }, { id: '2', name: 'Geometry' }]);
+}
+
+export function fetchTopics(): Promise<SyllabusItem[]> {
+  return Promise.resolve([{ id: '1', name: 'Quadratic Equations' }, { id: '2', name: 'Linear Equations' }]);
+}
+
+export function createParentQuestion(data: any) {
+  // Mock implementation
+  return Promise.resolve({ id: '123', ...data });
+}
+
+// Fix the Question and SyllabusMapping interfaces to match what's being used in components
+export interface SyllabusMapping {
+  board: SyllabusItem;
+  class: SyllabusItem;
+  subject: SyllabusItem;
+  chapter: SyllabusItem;
+  topic: SyllabusItem;
+}
+
+export interface Question {
+  id: string;
+  question: string;
+  questionType: string;
+  questionTitle?: string;
+  marks?: number;
+  hasChild?: boolean;
+  childQuestions?: Question[];
+  syllabusMapping?: SyllabusMapping;
+  // Add other fields that might be used
 }
