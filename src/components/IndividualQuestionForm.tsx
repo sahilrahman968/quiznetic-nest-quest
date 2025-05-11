@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,7 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, X } from "lucide-react";
 import { nanoid } from "nanoid";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
 
 const questionSchema = z.object({
@@ -68,7 +69,12 @@ const ensureValidEvaluationRubric = (rubric: any[]) => {
   }));
 };
 
-const IndividualQuestionForm = () => {
+interface IndividualQuestionFormProps {
+  parentId?: string;
+  onSuccess?: () => void;
+}
+
+const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormProps = {}) => {
   const [isMultipleChoice, setIsMultipleChoice] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -117,48 +123,33 @@ const IndividualQuestionForm = () => {
         questionType: [data.questionType],
         options: ensureCompleteOptions(data.options),
         evaluationRubric: ensureValidEvaluationRubric(data.evaluationRubric),
+        parentId // Add parent ID if present
       };
 
       if (data.questionType === "SINGLE_CORRECT_MCQ" || data.questionType === "MULTIPLE_CORRECT_MCQ") {
         if (!data.options || data.options.length < 2) {
-          toast({
-            title: "Error",
-            description: "MCQ questions must have at least two options.",
-            variant: "destructive",
-          });
+          toast("MCQ questions must have at least two options.");
           return;
         }
 
         const correctOptions = data.options.filter((option) => option.isCorrect);
         if (correctOptions.length === 0) {
-          toast({
-            title: "Error",
-            description: "MCQ questions must have at least one correct option.",
-            variant: "destructive",
-          });
+          toast("MCQ questions must have at least one correct option.");
           return;
         }
 
         await createMCQQuestion(questionData);
-        toast({
-          title: "Success",
-          description: "MCQ question created successfully!",
-        });
+        toast("MCQ question created successfully!");
+        if (onSuccess) onSuccess();
       } else if (data.questionType === "SUBJECTIVE") {
         await createSubjectiveQuestion(questionData);
-        toast({
-          title: "Success",
-          description: "Subjective question created successfully!",
-        });
+        toast("Subjective question created successfully!");
+        if (onSuccess) onSuccess();
       }
 
       form.reset();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create question. Please try again.",
-        variant: "destructive",
-      });
+      toast("Failed to create question. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

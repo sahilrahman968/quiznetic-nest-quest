@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 const API_BASE_URL = "http://localhost:3001";
@@ -7,10 +8,52 @@ export interface Teacher {
   name: string;
 }
 
+export interface Option {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
+export interface EvaluationCriterion {
+  criterion: string;
+  weight: number;
+}
+
+export interface SyllabusItem {
+  id: string;
+  name: string;
+}
+
+export interface SyllabusMapping {
+  board: SyllabusItem;
+  class: SyllabusItem;
+  subject: SyllabusItem;
+  chapter: SyllabusItem;
+  topic: SyllabusItem;
+}
+
+export interface Question {
+  id: string;
+  question: string;
+  questionType: string[];
+  questionTitle?: string;
+  explanation?: string;
+  marks?: number;
+  hasChild?: boolean;
+  childQuestions?: Question[];
+  syllabusMapping?: SyllabusMapping;
+  options?: Option[];
+  evaluationRubric?: EvaluationCriterion[];
+  images?: string[];
+  createdBy?: Teacher;
+  source?: string;
+  difficulty?: string;
+}
+
 export const login = async (
   email: string,
   password: string
-): Promise<{ teacher: Teacher }> => {
+): Promise<{ teacher: Teacher; token: string }> => {
   try {
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: "POST",
@@ -83,6 +126,25 @@ export const createQuestion = async (questionData: any): Promise<Question> => {
   }
 };
 
+// Add these specialized question creation functions
+export const createMCQQuestion = async (questionData: any): Promise<Question> => {
+  return createQuestion({
+    ...questionData,
+    questionType: Array.isArray(questionData.questionType) 
+      ? questionData.questionType 
+      : [questionData.questionType]
+  });
+};
+
+export const createSubjectiveQuestion = async (questionData: any): Promise<Question> => {
+  return createQuestion({
+    ...questionData,
+    questionType: Array.isArray(questionData.questionType) 
+      ? questionData.questionType 
+      : [questionData.questionType]
+  });
+};
+
 export const uploadFile = async (file: File): Promise<{ uploadUrl: string; fileUrl: string }> => {
   try {
     const token = localStorage.getItem("token");
@@ -105,7 +167,6 @@ export const uploadFile = async (file: File): Promise<{ uploadUrl: string; fileU
   }
 };
 
-// Add these function exports to solve the build errors
 export function isAuthenticated() {
   const token = localStorage.getItem('token');
   return !!token;
@@ -118,12 +179,7 @@ export function getLoggedInTeacher() {
 
 export function getUploadUrl() {
   // Mock implementation
-  return Promise.resolve({ uploadUrl: 'https://example.com/upload', fileUrl: 'https://example.com/file.jpg' });
-}
-
-export interface SyllabusItem {
-  id: string;
-  name: string;
+  return Promise.resolve({ uploadUrl: 'https://example.com/upload', fileUrl: 'https://example.com/file.jpg', url: 'https://example.com/upload', key: 'file-key' });
 }
 
 export function fetchBoards(): Promise<SyllabusItem[]> {
@@ -149,25 +205,4 @@ export function fetchTopics(): Promise<SyllabusItem[]> {
 export function createParentQuestion(data: any) {
   // Mock implementation
   return Promise.resolve({ id: '123', ...data });
-}
-
-// Fix the Question and SyllabusMapping interfaces to match what's being used in components
-export interface SyllabusMapping {
-  board: SyllabusItem;
-  class: SyllabusItem;
-  subject: SyllabusItem;
-  chapter: SyllabusItem;
-  topic: SyllabusItem;
-}
-
-export interface Question {
-  id: string;
-  question: string;
-  questionType: string;
-  questionTitle?: string;
-  marks?: number;
-  hasChild?: boolean;
-  childQuestions?: Question[];
-  syllabusMapping?: SyllabusMapping;
-  // Add other fields that might be used
 }
