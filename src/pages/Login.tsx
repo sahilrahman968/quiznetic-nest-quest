@@ -51,25 +51,25 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Question Management System</CardTitle>
+    <div className="flex items-center justify-center min-h-screen bg-duolingo-light">
+      <Card className="w-full max-w-md border-2 border-duolingo-green rounded-2xl shadow-lg">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-2xl text-duolingo-green">Question Management System</CardTitle>
           <CardDescription>Login to your account to continue</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium">Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="john.doe@example.com" {...field} />
+                      <Input placeholder="john.doe@example.com" {...field} className="rounded-xl border-2 focus-visible:ring-duolingo-green" />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-duolingo-red" />
                   </FormItem>
                 )}
               />
@@ -78,15 +78,15 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <Input type="password" placeholder="******" {...field} className="rounded-xl border-2 focus-visible:ring-duolingo-green" />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-duolingo-red" />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-duolingo-green hover:bg-duolingo-green/90 rounded-xl text-white font-bold py-3" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>

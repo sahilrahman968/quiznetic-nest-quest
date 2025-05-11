@@ -19,35 +19,35 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b">
+    <div className="min-h-screen flex flex-col bg-[#f9f9f9]">
+      <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold">Question Management System</Link>
+          <Link to="/" className="text-xl font-extrabold text-[#58cc02]">Question Management System</Link>
           
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Logged in as {teacher?.name}</span>
-              <Button onClick={handleLogout} variant="outline" size="sm">Logout</Button>
+              <Button onClick={handleLogout} variant="outline" size="sm" className="hover:bg-[#f9f9f9] border-[#58cc02] text-[#58cc02]">Logout</Button>
             </div>
           ) : (
             <Link to="/login">
-              <Button variant="outline" size="sm">Login</Button>
+              <Button variant="outline" size="sm" className="hover:bg-[#f9f9f9] border-[#58cc02] text-[#58cc02]">Login</Button>
             </Link>
           )}
         </div>
       </header>
 
       {isAuthenticated && (
-        <nav className="bg-gray-100 border-b">
+        <nav className="bg-[#58cc02] text-white border-b">
           <div className="container mx-auto px-4">
-            <ul className="flex space-x-6 py-2">
+            <ul className="flex space-x-6 py-3">
               <li>
-                <Link to="/questions" className="text-gray-700 hover:text-gray-900 font-medium">
+                <Link to="/questions" className="font-bold hover:text-[#fff6cd] transition-colors">
                   Question Bank
                 </Link>
               </li>
               <li>
-                <Link to="/create-question" className="text-gray-700 hover:text-gray-900 font-medium">
+                <Link to="/create-question" className="font-bold hover:text-[#fff6cd] transition-colors">
                   Create Question
                 </Link>
               </li>

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,17 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+        duolingo: {
+          green: '#58cc02',
+          yellow: '#ffce26',
+          orange: '#ff9600',
+          red: '#ff4b4b',
+          blue: '#1cb0f6',
+          purple: '#9770ff',
+          gray: '#e5e5e5',
+          light: '#f9f9f9'
+        }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -89,7 +100,10 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+			},
+      fontFamily: {
+        sans: ['Nunito', 'sans-serif'],
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
