@@ -1,11 +1,9 @@
 
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { logout } from "@/services/api";
-import { Code, Brain, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,8 +12,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const { isAuthenticated, teacher } = useAuth();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
-  
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -23,53 +20,35 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-white/20 dark:border-white/10">
+      <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold flex items-center gap-2">
-            <Brain className="h-6 w-6 text-accent" />
-            <span className="glow-text">Question Management System</span>
-          </Link>
+          <Link to="/" className="text-xl font-bold">Question Management System</Link>
           
-          <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Logged in as {teacher?.name}</span>
-                <Button onClick={handleLogout} variant="outline" size="sm" className="border-accent/50 hover:bg-accent/10">
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="border-accent/50 hover:bg-accent/10">Login</Button>
-              </Link>
-            )}
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full"
-            >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-          </div>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">Logged in as {teacher?.name}</span>
+              <Button onClick={handleLogout} variant="outline" size="sm">Logout</Button>
+            </div>
+          ) : (
+            <Link to="/login">
+              <Button variant="outline" size="sm">Login</Button>
+            </Link>
+          )}
         </div>
       </header>
 
       {isAuthenticated && (
-        <nav className="bg-secondary/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-white/20 dark:border-white/10">
+        <nav className="bg-gray-100 border-b">
           <div className="container mx-auto px-4">
             <ul className="flex space-x-6 py-2">
               <li>
-                <Link to="/questions" className="text-gray-700 dark:text-gray-300 hover:text-primary font-medium flex items-center gap-1">
-                  <Code className="h-4 w-4" />
-                  <span>Question Bank</span>
+                <Link to="/questions" className="text-gray-700 hover:text-gray-900 font-medium">
+                  Question Bank
                 </Link>
               </li>
               <li>
-                <Link to="/create-question" className="text-gray-700 dark:text-gray-300 hover:text-primary font-medium flex items-center gap-1">
-                  <Brain className="h-4 w-4" />
-                  <span>Create Question</span>
+                <Link to="/create-question" className="text-gray-700 hover:text-gray-900 font-medium">
+                  Create Question
                 </Link>
               </li>
             </ul>
