@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Question, fetchQuestions } from "@/services/api";
+import { Question, getQuestions } from "@/services/api";
 import QuestionCard from "@/components/QuestionCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,7 +16,7 @@ const QuestionBank = () => {
     const loadQuestions = async () => {
       setLoading(true);
       try {
-        const data = await fetchQuestions();
+        const data = await getQuestions();
         setQuestions(data);
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -31,11 +31,11 @@ const QuestionBank = () => {
   const filteredQuestions = questions
     .filter(q => {
       if (filter === "ALL") return true;
-      if (filter === "NESTED") return q.hasChild;
-      return !q.hasChild;
+      if (filter === "NESTED") return q.childQuestions && q.childQuestions.length > 0;
+      return !q.childQuestions || q.childQuestions.length === 0;
     })
     .filter(q => 
-      q.questionTitle.toLowerCase().includes(searchTerm.toLowerCase())
+      q.question.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   return (
@@ -48,6 +48,7 @@ const QuestionBank = () => {
             placeholder="Search questions..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
+            className="chatgpt-input"
           />
         </div>
         <div className="w-full md:w-1/3">
@@ -55,7 +56,7 @@ const QuestionBank = () => {
             value={filter}
             onValueChange={(value: "ALL" | "SINGLE" | "NESTED") => setFilter(value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="chatgpt-input">
               <SelectValue placeholder="Filter questions" />
             </SelectTrigger>
             <SelectContent>
@@ -71,15 +72,15 @@ const QuestionBank = () => {
         <div className="text-center py-10">Loading questions...</div>
       ) : filteredQuestions.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-gray-500">No questions found</p>
-          <Button className="mt-4" onClick={() => window.location.href = "/create-question"}>
+          <p className="text-slate-500">No questions found</p>
+          <Button className="mt-4 chatgpt-button" onClick={() => window.location.href = "/create-question"}>
             Create a Question
           </Button>
         </div>
       ) : (
         <div className="space-y-6">
           {filteredQuestions.map(question => (
-            <QuestionCard key={question._id} question={question} />
+            <QuestionCard key={question.id} question={question} />
           ))}
         </div>
       )}

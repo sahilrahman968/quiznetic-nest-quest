@@ -38,18 +38,11 @@ const Login = () => {
       const response = await login(data.email, data.password);
       setAuthStatus(true);
       setTeacher({ id: response.teacher.id, name: response.teacher.name });
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${response.teacher.name}!`,
-      });
+      toast("Login Successful");
       navigate("/questions");
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password",
-        variant: "destructive"
-      });
+      toast("Login Failed - Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -57,9 +50,9 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center min-h-[80vh]">
-      <Card className="w-full max-w-md futuristic-card futuristic-glow">
+      <Card className="w-full max-w-md chatgpt-card">
         <CardHeader>
-          <CardTitle className="text-2xl glow-text">Question Management System</CardTitle>
+          <CardTitle className="text-2xl">Question Management System</CardTitle>
           <CardDescription>Login to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>
@@ -72,7 +65,7 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="john.doe@example.com" {...field} />
+                      <Input placeholder="john.doe@example.com" {...field} className="chatgpt-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -85,13 +78,13 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <Input type="password" placeholder="******" {...field} className="chatgpt-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full button-neon" disabled={isLoading}>
+              <Button type="submit" className="w-full chatgpt-button" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>

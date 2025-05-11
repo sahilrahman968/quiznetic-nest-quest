@@ -4,8 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { logout } from "@/services/api";
-import { Code, Brain, Moon, Sun } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import Sidebar from "./Sidebar";
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ const Layout = ({ children }: LayoutProps) => {
   const { isAuthenticated, teacher } = useAuth();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const handleLogout = () => {
     logout();
@@ -22,66 +24,74 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-white/20 dark:border-white/10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold flex items-center gap-2">
-            <Brain className="h-6 w-6 text-accent" />
-            <span className="glow-text">Question Management System</span>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Logged in as {teacher?.name}</span>
-                <Button onClick={handleLogout} variant="outline" size="sm" className="border-accent/50 hover:bg-accent/10">
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="border-accent/50 hover:bg-accent/10">Login</Button>
-              </Link>
-            )}
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full"
-            >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen flex">
+      {/* Mobile sidebar toggle */}
       {isAuthenticated && (
-        <nav className="bg-secondary/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-white/20 dark:border-white/10">
-          <div className="container mx-auto px-4">
-            <ul className="flex space-x-6 py-2">
-              <li>
-                <Link to="/questions" className="text-gray-700 dark:text-gray-300 hover:text-primary font-medium flex items-center gap-1">
-                  <Code className="h-4 w-4" />
-                  <span>Question Bank</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/create-question" className="text-gray-700 dark:text-gray-300 hover:text-primary font-medium flex items-center gap-1">
-                  <Brain className="h-4 w-4" />
-                  <span>Create Question</span>
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </nav>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="fixed top-3 left-3 z-40 md:hidden" 
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
       )}
-
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-6">
-          {children}
+      
+      {/* Sidebar for desktop */}
+      <div className={`hidden md:block ${isAuthenticated ? 'w-64' : 'w-0'}`}>
+        <Sidebar />
+      </div>
+      
+      {/* Mobile sidebar overlay */}
+      {isAuthenticated && sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-30 bg-black/50 md:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Mobile sidebar */}
+      {isAuthenticated && (
+        <div className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 md:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <Sidebar />
         </div>
-      </main>
+      )}
+      
+      <div className={`flex flex-col flex-1 ${isAuthenticated ? 'md:ml-64' : ''}`}>
+        <header className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700/60">
+          <div className="container mx-auto px-4 py-4 flex justify-end items-center">
+            <div className="flex items-center gap-4">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-slate-600 dark:text-slate-300">Logged in as {teacher?.name}</span>
+                  <Button onClick={handleLogout} variant="outline" size="sm">
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <Link to="/login">
+                  <Button variant="outline" size="sm">Login</Button>
+                </Link>
+              )}
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="rounded-full"
+              >
+                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-grow">
+          <div className="container mx-auto px-4 py-6">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
