@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 import { Teacher } from "@/types/api";
 
-const API_BASE_URL = "http://localhost:3001";
+const API_BASE_URL = "http://localhost:3001/api/teachers";
 
 export const login = async (
   email: string,
