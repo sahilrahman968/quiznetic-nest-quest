@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { login } from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,16 +45,21 @@ const Login = () => {
       navigate("/questions");
     } catch (error) {
       console.error(error);
+      toast({
+        title: "Login Failed",
+        description: "Invalid email or password",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-[80vh]">
+      <Card className="w-full max-w-md futuristic-card futuristic-glow">
         <CardHeader>
-          <CardTitle className="text-2xl">Question Management System</CardTitle>
+          <CardTitle className="text-2xl glow-text">Question Management System</CardTitle>
           <CardDescription>Login to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>
@@ -86,7 +91,7 @@ const Login = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full button-neon" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>

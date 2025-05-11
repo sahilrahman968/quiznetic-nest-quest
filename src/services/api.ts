@@ -1,5 +1,5 @@
 
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 // Base URL for API
 const API_URL = "https://api.example.com"; // Replace with your actual API URL
@@ -49,18 +49,25 @@ export interface Question {
 }
 
 // Mock data and functions for testing
-let loggedInTeacher: Teacher = {
+let loggedInTeacher: Teacher | null = {
   id: "teacher-123",
   name: "John Doe"
 };
 
+// Check if user is authenticated
+export function isAuthenticated(): boolean {
+  // Mock authentication check - in a real app, this would check for a valid token
+  return loggedInTeacher !== null;
+}
+
 // Login function
-export async function login(email: string, password: string): Promise<Teacher> {
+export async function login(email: string, password: string): Promise<{ teacher: Teacher }> {
   // Mock login logic
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (email && password) {
-        resolve(loggedInTeacher);
+        loggedInTeacher = { id: "teacher-123", name: "John Doe" };
+        resolve({ teacher: loggedInTeacher });
       } else {
         reject(new Error("Invalid credentials"));
       }
@@ -71,20 +78,13 @@ export async function login(email: string, password: string): Promise<Teacher> {
 // Logout function
 export function logout() {
   // Mock logout logic
-  toast({
-    title: "Logged out",
-    description: "You have been logged out successfully."
-  });
+  loggedInTeacher = null;
+  toast("Logged out successfully");
 }
 
 // Get logged in teacher
-export async function getLoggedInTeacher(): Promise<Teacher> {
-  // Mock getting logged in teacher
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(loggedInTeacher);
-    }, 200);
-  });
+export function getLoggedInTeacher(): Teacher | null {
+  return loggedInTeacher;
 }
 
 // Create an MCQ question
@@ -138,7 +138,7 @@ export async function getQuestions(): Promise<Question[]> {
             { id: "opt-1", text: "A JavaScript library", isCorrect: true },
             { id: "opt-2", text: "A programming language", isCorrect: false },
           ],
-          createdBy: loggedInTeacher,
+          createdBy: loggedInTeacher as Teacher,
           difficulty: "MEDIUM",
           tags: ["React", "JavaScript"],
         },
@@ -146,7 +146,7 @@ export async function getQuestions(): Promise<Question[]> {
           id: "question-2",
           questionType: ["SUBJECTIVE"],
           question: "Explain the concept of virtual DOM in React.",
-          createdBy: loggedInTeacher,
+          createdBy: loggedInTeacher as Teacher,
           difficulty: "HARD",
           tags: ["React", "Virtual DOM"],
           evaluationRubric: [
