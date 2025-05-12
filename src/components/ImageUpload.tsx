@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getUploadUrl } from "@/services/api";
+import { getImageUrl, getUploadUrl } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import { useFormContext } from "react-hook-form";
 import { Image } from "lucide-react";
@@ -11,6 +11,7 @@ interface ImageUploadProps {
 }
 
 const ImageUpload = ({ fieldName }: ImageUploadProps) => {
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const { setValue, watch } = useFormContext();
   
@@ -39,7 +40,9 @@ const ImageUpload = ({ fieldName }: ImageUploadProps) => {
         if (!uploadResponse.ok) {
           throw new Error("Failed to upload image");
         }
-        
+
+        const imageUrl = await getImageUrl(key);
+        setImageUrls((prev:any) => [...prev, imageUrl?.url]);       
         return key;
       });
       
@@ -72,7 +75,7 @@ const ImageUpload = ({ fieldName }: ImageUploadProps) => {
       currentImages.filter((_, index) => index !== indexToRemove)
     );
   };
-
+console.log('currentImages',{currentImages,imageUrls})
   return (
     <div className="space-y-4">
       <div className="flex items-center">
@@ -105,7 +108,7 @@ const ImageUpload = ({ fieldName }: ImageUploadProps) => {
             <div key={index} className="relative group border rounded-md p-1">
               <div className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
                 <img 
-                  src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/images/${imageKey}`}
+                  src={imageUrls[index]}
                   alt={`Uploaded image ${index + 1}`}
                   className="object-contain w-full h-full"
                 />
