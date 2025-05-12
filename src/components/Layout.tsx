@@ -21,7 +21,7 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-chatgpt-gray">
+    <div className="flex min-h-screen bg-chatgpt-gray w-full">
       {isAuthenticated && <AppSidebar />}
       <SidebarInset className="bg-chatgpt-gray flex flex-col">
         <header className="bg-white border-b border-chatgpt-border shadow-sm sticky top-0 z-10">
