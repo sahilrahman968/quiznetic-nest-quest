@@ -9,15 +9,15 @@ const Index = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-duolingo-light">
-      <Card className="w-full max-w-md border-2 border-duolingo-green rounded-2xl shadow-lg">
-        <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-2xl text-duolingo-green">Question Management System</CardTitle>
-          <CardDescription>Create and manage questions for exams and assessments</CardDescription>
+    <div className="min-h-[80vh] flex items-center justify-center bg-chatgpt-gray">
+      <Card className="w-full max-w-md border border-chatgpt-border rounded-lg shadow-sm">
+        <CardHeader className="border-b border-chatgpt-border">
+          <CardTitle className="text-2xl text-chatgpt-text">Question Management System</CardTitle>
+          <CardDescription className="text-chatgpt-lightText">Create and manage questions for exams and assessments</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
-          <p>This system allows teachers to:</p>
-          <ul className="list-disc pl-6 space-y-2 text-gray-700">
+          <p className="text-chatgpt-text">This system allows teachers to:</p>
+          <ul className="list-disc pl-6 space-y-2 text-chatgpt-lightText">
             <li>Create individual questions (MCQ or subjective)</li>
             <li>Create nested questions with multiple parts</li>
             <li>Manage a question bank</li>
@@ -27,15 +27,15 @@ const Index = () => {
         <CardFooter>
           {isAuthenticated ? (
             <div className="flex gap-4 w-full">
-              <Button onClick={() => navigate("/questions")} className="flex-1 bg-duolingo-green hover:bg-duolingo-green/90 rounded-xl text-white font-bold">
+              <Button onClick={() => navigate("/questions")} className="flex-1 bg-chatgpt-green hover:bg-chatgpt-green/90 rounded-md text-white font-medium">
                 Question Bank
               </Button>
-              <Button onClick={() => navigate("/create-question")} className="flex-1 bg-duolingo-blue hover:bg-duolingo-blue/90 rounded-xl text-white font-bold">
+              <Button onClick={() => navigate("/create-question")} className="flex-1 bg-chatgpt-lightText hover:bg-chatgpt-lightText/90 rounded-md text-white font-medium">
                 Create Question
               </Button>
             </div>
           ) : (
-            <Button onClick={() => navigate("/login")} className="w-full bg-duolingo-green hover:bg-duolingo-green/90 rounded-xl text-white font-bold py-3">
+            <Button onClick={() => navigate("/login")} className="w-full bg-chatgpt-green hover:bg-chatgpt-green/90 rounded-md text-white font-medium py-2">
               Login to Get Started
             </Button>
           )}

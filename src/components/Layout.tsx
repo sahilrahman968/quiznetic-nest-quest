@@ -21,24 +21,24 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f9f9f9]">
+    <div className="flex min-h-screen bg-chatgpt-gray">
       {isAuthenticated && <AppSidebar />}
-      <SidebarInset className="bg-[#f9f9f9]">
-        <header className="bg-white border-b shadow-sm sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <SidebarInset className="bg-chatgpt-gray">
+        <header className="bg-white border-b border-chatgpt-border shadow-sm sticky top-0 z-10">
+          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <div className="flex items-center gap-3">
               {isAuthenticated && <SidebarTrigger />}
-              <Link to="/" className="text-xl font-extrabold text-[#58cc02]">Question Management System</Link>
+              <Link to="/" className="text-xl font-bold text-chatgpt-green">Question Management System</Link>
             </div>
             
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">Logged in as {teacher?.name}</span>
-                <Button onClick={handleLogout} variant="outline" size="sm" className="hover:bg-[#f9f9f9] border-[#58cc02] text-[#58cc02]">Logout</Button>
+                <span className="text-sm text-chatgpt-lightText">Logged in as {teacher?.name}</span>
+                <Button onClick={handleLogout} variant="outline" size="sm" className="hover:bg-chatgpt-hover text-chatgpt-green border-chatgpt-border">Logout</Button>
               </div>
             ) : (
               <Link to="/login">
-                <Button variant="outline" size="sm" className="hover:bg-[#f9f9f9] border-[#58cc02] text-[#58cc02]">Login</Button>
+                <Button variant="outline" size="sm" className="hover:bg-chatgpt-hover text-chatgpt-green border-chatgpt-border">Login</Button>
               </Link>
             )}
           </div>

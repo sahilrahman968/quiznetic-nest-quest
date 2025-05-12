@@ -55,10 +55,10 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar className="bg-white border-r border-chatgpt-border">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Manage Questions</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-chatgpt-lightText font-medium">Manage Questions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -68,14 +68,14 @@ export function AppSidebar() {
                     onClick={() => handleNavigate(item.path, item.comingSoon)}
                     tooltip={item.title}
                     className={cn(
-                      "font-bold",
-                      item.comingSoon && "text-gray-400 hover:text-gray-500"
+                      "font-medium",
+                      item.comingSoon && "text-chatgpt-lightText hover:text-chatgpt-text"
                     )}
                   >
-                    <item.icon />
+                    <item.icon className="h-5 w-5" />
                     <span>{item.title}</span>
                     {item.comingSoon && (
-                      <span className="text-xs ml-2 bg-duolingo-orange/20 text-duolingo-orange px-2 py-0.5 rounded-full">Soon</span>
+                      <span className="text-xs ml-2 bg-chatgpt-lightGray text-chatgpt-lightText px-2 py-0.5 rounded-full">Soon</span>
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -51,11 +51,11 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-duolingo-light">
-      <Card className="w-full max-w-md border-2 border-duolingo-green rounded-2xl shadow-lg">
-        <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-2xl text-duolingo-green">Question Management System</CardTitle>
-          <CardDescription>Login to your account to continue</CardDescription>
+    <div className="flex items-center justify-center min-h-screen bg-chatgpt-gray">
+      <Card className="w-full max-w-md border border-chatgpt-border rounded-lg shadow-sm">
+        <CardHeader className="border-b border-chatgpt-border">
+          <CardTitle className="text-2xl text-chatgpt-text">Question Management System</CardTitle>
+          <CardDescription className="text-chatgpt-lightText">Login to your account to continue</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <Form {...form}>
@@ -65,11 +65,11 @@ const Login = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Email</FormLabel>
+                    <FormLabel className="text-chatgpt-text font-medium">Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="john.doe@example.com" {...field} className="rounded-xl border-2 focus-visible:ring-duolingo-green" />
+                      <Input placeholder="john.doe@example.com" {...field} className="rounded-md border focus-visible:ring-chatgpt-green" />
                     </FormControl>
-                    <FormMessage className="text-duolingo-red" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -78,15 +78,15 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Password</FormLabel>
+                    <FormLabel className="text-chatgpt-text font-medium">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} className="rounded-xl border-2 focus-visible:ring-duolingo-green" />
+                      <Input type="password" placeholder="******" {...field} className="rounded-md border focus-visible:ring-chatgpt-green" />
                     </FormControl>
-                    <FormMessage className="text-duolingo-red" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-duolingo-green hover:bg-duolingo-green/90 rounded-xl text-white font-bold py-3" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-chatgpt-green hover:bg-chatgpt-green/90 rounded-md text-white font-medium py-2" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>

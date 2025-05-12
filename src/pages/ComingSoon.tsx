@@ -9,21 +9,21 @@ const ComingSoon = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] p-4">
-      <Card className="w-full max-w-md border-2 border-duolingo-green rounded-2xl shadow-lg">
-        <CardHeader className="border-b border-gray-100 text-center">
+      <Card className="w-full max-w-md border border-chatgpt-border rounded-lg shadow-sm">
+        <CardHeader className="border-b border-chatgpt-border text-center">
           <div className="flex justify-center mb-4">
-            <Clock className="h-16 w-16 text-duolingo-orange" />
+            <Clock className="h-16 w-16 text-chatgpt-green" />
           </div>
-          <CardTitle className="text-2xl text-duolingo-green">Coming Soon</CardTitle>
+          <CardTitle className="text-2xl text-chatgpt-text">Coming Soon</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="text-center space-y-4">
-            <p className="text-gray-600">
+            <p className="text-chatgpt-lightText">
               We're working hard to bring this feature to you. Please check back later!
             </p>
             <Button 
               onClick={() => navigate("/")}
-              className="bg-duolingo-green hover:bg-duolingo-green/90 text-white font-bold rounded-xl"
+              className="bg-chatgpt-green hover:bg-chatgpt-green/90 text-white font-medium rounded-md"
             >
               Go Home
             </Button>

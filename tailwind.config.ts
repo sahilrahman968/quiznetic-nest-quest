@@ -63,15 +63,15 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-        duolingo: {
-          green: '#58cc02',
-          yellow: '#ffce26',
-          orange: '#ff9600',
-          red: '#ff4b4b',
-          blue: '#1cb0f6',
-          purple: '#9770ff',
-          gray: '#e5e5e5',
-          light: '#f9f9f9'
+        chatgpt: {
+          green: '#10a37f',
+          gray: '#f7f7f8',
+          lightGray: '#ececf1',
+          text: '#353740',
+          lightText: '#6e6e80',
+          border: '#e5e5e5',
+          accent: '#d9d9e3',
+          hover: '#f9f9fa'
         }
 			},
 			borderRadius: {
