@@ -15,14 +15,14 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
 
   const renderImages = (images: string[] | undefined) => {
     if (!images || images.length === 0) return null;
-    
+
     return (
       <div className="mt-4">
         <h4 className="font-medium mb-2">Images:</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {images.map((imageKey, index) => (
             <div key={index} className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
-              <img 
+              <img
                 src={imageKey}
                 alt={`Image ${index + 1}`}
                 className="object-contain w-full h-full"
@@ -36,7 +36,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
 
   const renderOptions = (options: Question["options"]) => {
     if (!options || options.length === 0) return null;
-    
+
     return (
       <div className="mt-4">
         <h4 className="font-medium">Options:</h4>
@@ -54,7 +54,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
 
   const renderEvaluationRubric = (rubrics: Question["evaluationRubric"]) => {
     if (!rubrics || rubrics.length === 0) return null;
-    
+
     return (
       <div className="mt-4">
         <h4 className="font-medium">Evaluation Rubric:</h4>
@@ -71,7 +71,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
 
   const renderChildQuestions = (children: Question[]) => {
     if (!children || children.length === 0) return null;
-    
+
     return (
       <div className="mt-6 space-y-4">
         <h4 className="text-lg font-medium">Child Questions:</h4>
@@ -117,7 +117,10 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
           <div>
             <CardTitle>{question.questionTitle}</CardTitle>
             {question.hasChild ? (
-              <CardDescription>Nested Question with {question.childQuestions?.length || 0} sub-questions</CardDescription>
+              <>
+                <CardDescription>Nested Question with {question.childQuestions?.length || 0} sub-questions</CardDescription>
+                {renderImages(question.images)}
+              </>
             ) : (
               <div className="flex gap-2 mt-1">
                 <Badge variant="outline">Marks: {question.marks}</Badge>
