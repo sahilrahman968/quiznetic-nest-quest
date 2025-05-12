@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import CreateQuestion from "./pages/CreateQuestion";
 import QuestionBank from "./pages/QuestionBank";
 import Layout from "./components/Layout";
+import ComingSoon from "./pages/ComingSoon";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,20 @@ const AppRoutes = () => {
         <ProtectedRoute>
           <Layout>
             <CreateQuestion />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/question-papers" element={
+        <ProtectedRoute>
+          <Layout>
+            <ComingSoon feature="Question Paper Bank" />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-question-paper" element={
+        <ProtectedRoute>
+          <Layout>
+            <ComingSoon feature="Create Question Paper" />
           </Layout>
         </ProtectedRoute>
       } />
