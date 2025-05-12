@@ -23,7 +23,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="flex min-h-screen bg-chatgpt-gray">
       {isAuthenticated && <AppSidebar />}
-      <SidebarInset className="bg-chatgpt-gray">
+      <SidebarInset className="bg-chatgpt-gray flex flex-col">
         <header className="bg-white border-b border-chatgpt-border shadow-sm sticky top-0 z-10">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <div className="flex items-center gap-3">
@@ -44,7 +44,7 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
 
-        <main className="flex-grow container mx-auto px-4 py-6">
+        <main className="flex-grow container mx-auto px-4 py-6 w-full">
           {children}
         </main>
       </SidebarInset>
