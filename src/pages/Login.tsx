@@ -51,7 +51,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-chatgpt-gray">
+    <div className="flex items-center justify-center min-h-screen bg-chatgpt-gray w-full">
       <Card className="w-full max-w-md border border-chatgpt-border rounded-lg shadow-sm">
         <CardHeader className="border-b border-chatgpt-border">
           <CardTitle className="text-2xl text-chatgpt-text">Question Management System</CardTitle>
