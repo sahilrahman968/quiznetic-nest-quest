@@ -5,11 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import CreateQuestion from "./pages/CreateQuestion";
 import QuestionBank from "./pages/QuestionBank";
+import ComingSoon from "./pages/ComingSoon";
 import Layout from "./components/Layout";
 
 const queryClient = new QueryClient();
@@ -48,6 +50,27 @@ const AppRoutes = () => {
           </Layout>
         </ProtectedRoute>
       } />
+      <Route path="/coming-soon" element={
+        <ProtectedRoute>
+          <Layout>
+            <ComingSoon />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/question-papers" element={
+        <ProtectedRoute>
+          <Layout>
+            <ComingSoon />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-question-paper" element={
+        <ProtectedRoute>
+          <Layout>
+            <ComingSoon />
+          </Layout>
+        </ProtectedRoute>
+      } />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -57,11 +80,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <SidebarProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </SidebarProvider>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
