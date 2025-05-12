@@ -284,6 +284,25 @@ export const getUploadUrl = async (): Promise<{ url: string; key: string }> => {
   }
 };
 
+export const getImageUrl = async (key): Promise<{ url: string }> => {
+  console.log('key',key)
+  try {
+    const response = await fetch(`${BASE_URL}/s3/get-image-url/${key}`, {
+      headers: getAuthHeaders(),
+    });
+    console.log('response',response)
+    if (!response.ok) throw new Error("Failed to get image URL");
+    return await response.json();
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Failed to get image URL",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
 // Helper to get logged in teacher info
 export const getLoggedInTeacher = (): { id: string; name: string } | null => {
   const teacherStr = localStorage.getItem("teacher");
