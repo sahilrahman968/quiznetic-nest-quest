@@ -65,6 +65,37 @@ export interface Question {
   year?: string;
 }
 
+export interface QuestionPaperQuestion extends Question {
+  questionId: string;
+  questionOrder: number;
+  sectionOrder: number;
+}
+
+export interface Difficulty {
+  easy: number;
+  medium: number;
+  hard: number;
+}
+
+export interface QuestionPaper {
+  _id: string;
+  id: string;
+  paperTitle: string;
+  instructions: string[];
+  paperType: "SUBJECTIVE" | "OBJECTIVE" | "MIXED";
+  defaultStatus: "LOCKED" | "UNLOCKED";
+  year: string;
+  board: SyllabusItem;
+  class: SyllabusItem;
+  subject: SyllabusItem;
+  timeDuration: number;
+  totalMarks: number;
+  difficulty: Difficulty;
+  questions: QuestionPaperQuestion[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Auth functions
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
   try {
@@ -300,6 +331,24 @@ export const getImageUrl = async (key): Promise<{ url: string }> => {
       variant: "destructive",
     });
     throw error;
+  }
+};
+
+// Question Paper API functions
+export const fetchQuestionPapers = async (): Promise<QuestionPaper[]> => {
+  try {
+    const response = await fetch(`${BASE_URL}/question-paper`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch question papers");
+    return await response.json();
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Failed to fetch question papers",
+      variant: "destructive",
+    });
+    return [];
   }
 };
 
