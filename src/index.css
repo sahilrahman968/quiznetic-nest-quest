@@ -36,12 +36,19 @@
     --radius: 1rem;
 
     --sidebar-background: 130 65% 49%;
+
     --sidebar-foreground: 210 40% 98%;
+
     --sidebar-primary: 240 5.9% 10%;
+
     --sidebar-primary-foreground: 0 0% 98%;
+
     --sidebar-accent: 46 100% 67%;
+
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 46 100% 82%;
+
+    --sidebar-border: 220 13% 91%;
+
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -80,7 +87,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 46 100% 67%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 46 100% 82%;
+    --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -97,27 +104,5 @@
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
-  }
-}
-
-@layer components {
-  .sidebar-shadow {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  }
-
-  /* Make the sidebar menu icons slightly larger */
-  [data-sidebar="menu-button"] svg {
-    @apply w-5 h-5;
-  }
-
-  /* Style the active menu item with a different background */
-  [data-sidebar="menu-button"][data-active="true"] {
-    background-color: hsl(var(--sidebar-accent));
-    font-weight: 600;
-  }
-
-  /* Add a hover effect for menu items */
-  [data-sidebar="menu-button"]:not([aria-disabled="true"]):hover {
-    background-color: hsl(var(--sidebar-accent) / 0.8);
   }
 }
