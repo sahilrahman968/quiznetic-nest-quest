@@ -154,7 +154,7 @@ const NestedQuestionForm = () => {
                     {parentQuestion.images.map((imageKey, index) => (
                       <div key={index} className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
                         <img 
-                          src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/images/${imageKey}`}
+                          src={imageKey}
                           alt={`Image ${index + 1}`}
                           className="object-contain w-full h-full"
                         />
