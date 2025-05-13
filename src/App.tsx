@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import CreateQuestion from "./pages/CreateQuestion";
 import QuestionBank from "./pages/QuestionBank";
+import QuestionPaperBank from "./pages/QuestionPaperBank";
 import ComingSoon from "./pages/ComingSoon";
 import Layout from "./components/Layout";
 
@@ -60,7 +61,7 @@ const AppRoutes = () => {
       <Route path="/question-papers" element={
         <ProtectedRoute>
           <Layout>
-            <ComingSoon />
+            <QuestionPaperBank />
           </Layout>
         </ProtectedRoute>
       } />
