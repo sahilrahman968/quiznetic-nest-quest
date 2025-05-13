@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getImageUrl, getUploadUrl } from "@/services/api";
+import { getUploadUrl, getImageUrl } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import { useFormContext } from "react-hook-form";
 import { Image } from "lucide-react";
@@ -42,7 +42,7 @@ const ImageUpload = ({ fieldName }: ImageUploadProps) => {
         }
 
         const imageUrl = await getImageUrl(key);
-        setImageUrls((prev:any) => [...prev, imageUrl?.url]);       
+        setImageUrls((prev) => [...prev, imageUrl?.url]);       
         return key;
       });
       
@@ -75,7 +75,7 @@ const ImageUpload = ({ fieldName }: ImageUploadProps) => {
       currentImages.filter((_, index) => index !== indexToRemove)
     );
   };
-console.log('currentImages',{currentImages,imageUrls})
+
   return (
     <div className="space-y-4">
       <div className="flex items-center">
@@ -108,7 +108,7 @@ console.log('currentImages',{currentImages,imageUrls})
             <div key={index} className="relative group border rounded-md p-1">
               <div className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
                 <img 
-                  src={imageUrls[index]}
+                  src={imageUrls[index] || imageKey}
                   alt={`Uploaded image ${index + 1}`}
                   className="object-contain w-full h-full"
                 />

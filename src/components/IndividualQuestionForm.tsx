@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -46,10 +47,8 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import {
   Question,
-  QuestionType,
-  Difficulty,
+  EvaluationRubric,
   Option,
-  EvaluationRubricItem,
 } from "@/services/api";
 
 const formSchema = z.object({
@@ -81,6 +80,8 @@ const formSchema = z.object({
 interface IndividualQuestionFormProps {
   onSubmit: (data: z.infer<typeof formSchema>) => void;
   initialValues?: Partial<Question>;
+  parentId?: string;
+  onSuccess?: () => void;
 }
 
 const defaultQuestion: Partial<Question> = {
@@ -101,9 +102,11 @@ const defaultQuestion: Partial<Question> = {
 const IndividualQuestionForm = ({
   onSubmit,
   initialValues = defaultQuestion,
+  parentId,
+  onSuccess,
 }: IndividualQuestionFormProps) => {
   const [open, setOpen] = useState(false);
-  const [questionType, setQuestionType] = useState<QuestionType[]>(
+  const [questionType, setQuestionType] = useState<("SUBJECTIVE" | "OBJECTIVE")[]>(
     initialValues?.questionType || ["SUBJECTIVE"]
   );
 
@@ -135,7 +138,7 @@ const IndividualQuestionForm = ({
     setQuestionType(initialValues?.questionType || ["SUBJECTIVE"]);
   }, [initialValues, form]);
 
-  const handleQuestionTypeChange = (value: QuestionType[]) => {
+  const handleQuestionTypeChange = (value: ("SUBJECTIVE" | "OBJECTIVE")[]) => {
     setQuestionType(value);
     form.setValue("questionType", value);
   };
@@ -164,7 +167,12 @@ const IndividualQuestionForm = ({
   };
 
   const onSubmitHandler = (values: z.infer<typeof formSchema>) => {
-    onSubmit(values);
+    if (onSubmit) {
+      onSubmit(values);
+    }
+    if (onSuccess) {
+      onSuccess();
+    }
     toast({
       title: "Question created successfully!",
       description: "Your question has been saved.",
@@ -223,7 +231,7 @@ const IndividualQuestionForm = ({
                           const newTypes = includes
                             ? questionType.filter((type) => type !== "SUBJECTIVE")
                             : [...questionType, "SUBJECTIVE"];
-                          handleQuestionTypeChange(newTypes as QuestionType[]);
+                          handleQuestionTypeChange(newTypes);
                         }}
                         className="cursor-pointer"
                       >
@@ -238,7 +246,7 @@ const IndividualQuestionForm = ({
                           const newTypes = includes
                             ? questionType.filter((type) => type !== "OBJECTIVE")
                             : [...questionType, "OBJECTIVE"];
-                          handleQuestionTypeChange(newTypes as QuestionType[]);
+                          handleQuestionTypeChange(newTypes);
                         }}
                         className="cursor-pointer"
                       >
@@ -299,7 +307,7 @@ const IndividualQuestionForm = ({
                 <FormDescription>
                   Add options for the question. Mark the correct option(s).
                 </FormDescription>
-                <Accordion type="multiple" collapsible>
+                <Accordion type="multiple">
                   {form.watch("options").map((option, index) => (
                     <AccordionItem value={String(index)} key={index}>
                       <AccordionTrigger>Option {index + 1}</AccordionTrigger>
@@ -370,7 +378,7 @@ const IndividualQuestionForm = ({
                 <FormDescription>
                   Add criteria for evaluating the question.
                 </FormDescription>
-                <Accordion type="multiple" collapsible>
+                <Accordion type="multiple">
                   {form.watch("evaluationRubric").map((rubricItem, index) => (
                     <AccordionItem value={String(index)} key={index}>
                       <AccordionTrigger>Criterion {index + 1}</AccordionTrigger>
@@ -420,8 +428,9 @@ const IndividualQuestionForm = ({
                                 <FormLabel>Keyword Hints</FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="Enter keyword hints"
-                                    {...field}
+                                    placeholder="Enter keyword hints (comma separated)"
+                                    value={field.value.join(', ')}
+                                    onChange={(e) => field.onChange(e.target.value.split(',').map(item => item.trim()))}
                                   />
                                 </FormControl>
                                 <FormMessage />

@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { nanoid } from "nanoid";
 import { PlusCircle, X } from "lucide-react";
 
 interface Option {
-  id: string;
+  id?: string;
   text: string;
   isCorrect: boolean;
 }
@@ -31,7 +30,7 @@ const MCQOptions = ({ control, isMultipleChoice }: MCQOptionsProps) => {
     if (!newOptionText.trim()) return;
     
     append({
-      id: nanoid(),
+      id: Math.random().toString(36).substring(2, 9), // Simple ID generator instead of nanoid
       text: newOptionText,
       isCorrect: false,
     });

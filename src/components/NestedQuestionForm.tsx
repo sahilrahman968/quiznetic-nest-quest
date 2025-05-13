@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Question, createParentQuestion, getLoggedInTeacher } from "@/services/api";
+import { Question, createQuestion, getTeacher } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import IndividualQuestionForm from "./IndividualQuestionForm";
 import ImageUpload from "./ImageUpload";
@@ -36,7 +36,7 @@ const NestedQuestionForm = () => {
 
   const onCreateParent = async (data: ParentQuestionFormData) => {
     try {
-      const teacher = getLoggedInTeacher();
+      const teacher = getTeacher();
       if (!teacher) {
         toast({
           title: "Error",
@@ -48,10 +48,18 @@ const NestedQuestionForm = () => {
 
       const questionData = {
         ...data,
+        hasChild: true,
+        childIds: [],
+        childQuestions: [],
         createdBy: teacher,
+        difficulty: "MEDIUM", // Default difficulty
+        questionType: ["SUBJECTIVE"], // Default question type
+        marks: 0, // Parent questions don't have marks
+        options: [],
+        evaluationRubric: []
       };
 
-      const response = await createParentQuestion(questionData);
+      const response = await createQuestion(questionData as Question);
       setParentQuestion(response);
       
       toast({
@@ -77,6 +85,12 @@ const NestedQuestionForm = () => {
   const startNewNestedQuestion = () => {
     setParentQuestion(null);
     setChildQuestionsCount(0);
+  };
+
+  // Mock implementation for child question creation
+  const handleCreateChildQuestion = (data: any) => {
+    console.log("Child question data:", data);
+    handleChildQuestionSuccess();
   };
 
   return (
@@ -175,8 +189,7 @@ const NestedQuestionForm = () => {
             </div>
 
             <IndividualQuestionForm 
-              parentId={parentQuestion.id} 
-              onSuccess={handleChildQuestionSuccess} 
+              onSubmit={handleCreateChildQuestion}
             />
           </div>
         </div>
