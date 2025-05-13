@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import CreateQuestion from "./pages/CreateQuestion";
 import QuestionBank from "./pages/QuestionBank";
 import QuestionPaperBank from "./pages/QuestionPaperBank";
+import QuestionPaperView from "./pages/QuestionPaperView";
 import ComingSoon from "./pages/ComingSoon";
 import Layout from "./components/Layout";
 
@@ -62,6 +63,13 @@ const AppRoutes = () => {
         <ProtectedRoute>
           <Layout>
             <QuestionPaperBank />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/question-papers/:id" element={
+        <ProtectedRoute>
+          <Layout>
+            <QuestionPaperView />
           </Layout>
         </ProtectedRoute>
       } />

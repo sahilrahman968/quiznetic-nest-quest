@@ -2,16 +2,25 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuestionPaper } from "@/types/questionPaper";
 import { Book, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface QuestionPaperCardProps {
   questionPaper: QuestionPaper;
 }
 
 const QuestionPaperCard = ({ questionPaper }: QuestionPaperCardProps) => {
-  const { paperTitle, board, subject, class: classInfo, year, timeDuration, totalMarks, questions } = questionPaper;
+  const { id, paperTitle, board, subject, class: classInfo, year, timeDuration, totalMarks, questions } = questionPaper;
+  const navigate = useNavigate();
+  
+  const handleCardClick = () => {
+    navigate(`/question-papers/${id}`);
+  };
   
   return (
-    <Card className="w-full h-full hover:shadow-md transition-shadow">
+    <Card 
+      className="w-full h-full hover:shadow-md transition-shadow cursor-pointer" 
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-bold line-clamp-2">{paperTitle}</CardTitle>

@@ -27,3 +27,21 @@ export const fetchQuestionPapers = async (): Promise<QuestionPaper[]> => {
     return [];
   }
 };
+
+export const fetchQuestionPaperById = async (id: string): Promise<QuestionPaper | null> => {
+  try {
+    const response = await fetch(`http://localhost:3001/api/question-paper/${id}`, {
+      headers: getAuthHeaders(),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch question paper');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching question paper with ID ${id}:`, error);
+    return null;
+  }
+};
