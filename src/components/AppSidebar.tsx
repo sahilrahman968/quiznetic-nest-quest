@@ -36,7 +36,7 @@ export function AppSidebar() {
       title: "Question Paper Bank",
       icon: LayoutList,
       path: "/question-papers",
-      comingSoon: true
+      comingSoon: false // Changed from true to false
     },
     {
       title: "Create Question Paper",
