@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -12,7 +11,7 @@ import MCQOptions from "@/components/MCQOptions";
 import EvaluationRubric from "@/components/EvaluationRubric";
 import SyllabusMapping from "@/components/SyllabusMapping";
 import ImageUpload from "@/components/ImageUpload";
-import { Option, Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
+import { Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 
 const questionSchema = z.object({
@@ -31,6 +30,7 @@ const questionSchema = z.object({
     z.object({
       criterion: z.string().min(1, "Criterion is required"),
       weight: z.number().min(1, "Weight must be at least 1"),
+      keywordHints: z.array(z.string()).default([])
     })
   ).optional(),
   source: z.enum(["AI_GENERATED", "USER_GENERATED"]),
@@ -68,10 +68,11 @@ type QuestionFormData = z.infer<typeof questionSchema>;
 
 interface IndividualQuestionFormProps {
   parentId?: string;
+  onSubmit?: (data: QuestionFormData) => void;
   onSuccess?: () => void;
 }
 
-const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormProps) => {
+const IndividualQuestionForm = ({ parentId, onSubmit, onSuccess }: IndividualQuestionFormProps) => {
   const form = useForm<QuestionFormData>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
@@ -100,7 +101,7 @@ const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormP
     }
   }, [questionType, form]);
 
-  const onSubmit = async (data: QuestionFormData) => {
+  const handleSubmit = async (data: QuestionFormData) => {
     try {
       const teacher = getLoggedInTeacher();
       if (!teacher) {
@@ -112,17 +113,29 @@ const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormP
         return;
       }
 
-      // Prepare the question data
+      // Handle custom onSubmit if provided
+      if (onSubmit) {
+        onSubmit(data);
+        return;
+      }
+
+      // Prepare the question data with properly typed evaluation rubric
       const questionData: Partial<Question> = {
         ...data,
         createdBy: teacher,
         questionType: [data.questionType],
         // Ensure options have required properties
         options: data.options?.map(opt => ({
-          id: opt.id || '',
-          text: opt.text || '',
-          isCorrect: opt.isCorrect || false
-        }))
+          id: opt.id,
+          text: opt.text,
+          isCorrect: opt.isCorrect
+        })) || [],
+        // Ensure evaluation rubric has all required properties
+        evaluationRubric: data.evaluationRubric?.map(rubric => ({
+          criterion: rubric.criterion,
+          weight: rubric.weight,
+          keywordHints: rubric.keywordHints || []
+        })) || []
       };
 
       // Submit based on question type
@@ -176,12 +189,17 @@ const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormP
       }
     } catch (error) {
       console.error("Error creating question:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create question",
+        variant: "destructive",
+      });
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="questionTitle"

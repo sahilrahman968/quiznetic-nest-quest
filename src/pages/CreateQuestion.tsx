@@ -14,7 +14,7 @@ const CreateQuestion = () => {
           <TabsTrigger value="nested">Nested Question</TabsTrigger>
         </TabsList>
         <TabsContent value="individual" className="pt-4">
-          <IndividualQuestionForm />
+          <IndividualQuestionForm onSuccess={() => console.log("Question created successfully")} />
         </TabsContent>
         <TabsContent value="nested" className="pt-4">
           <NestedQuestionForm />
