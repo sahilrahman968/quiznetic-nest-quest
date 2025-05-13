@@ -1,17 +1,12 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { isAuthenticated as checkAuth, getTeacher } from "@/services/api";
-
-interface Teacher {
-  id: string;
-  name: string;
-}
+import { Teacher, isAuthenticated as checkAuth, getLoggedInTeacher } from "@/services/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  teacher: Teacher | null;
+  teacher: { id: string; name: string } | null;
   setAuthStatus: (status: boolean) => void;
-  setTeacher: (teacher: Teacher | null) => void;
+  setTeacher: (teacher: { id: string; name: string } | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -23,7 +18,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuth, setIsAuth] = useState(false);
-  const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [teacher, setTeacher] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     const checkAuthStatus = () => {
@@ -31,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuth(authStatus);
       
       if (authStatus) {
-        const teacherInfo = getTeacher();
+        const teacherInfo = getLoggedInTeacher();
         setTeacher(teacherInfo);
       }
     };

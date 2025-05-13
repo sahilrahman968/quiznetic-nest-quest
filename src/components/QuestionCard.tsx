@@ -20,10 +20,10 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
       <div className="mt-4">
         <h4 className="font-medium mb-2">Images:</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {images.map((imageUrl, index) => (
+          {images.map((imageKey, index) => (
             <div key={index} className="aspect-square bg-gray-100 rounded flex items-center justify-center overflow-hidden">
               <img
-                src={imageUrl}
+                src={imageKey}
                 alt={`Image ${index + 1}`}
                 className="object-contain w-full h-full"
               />
@@ -41,8 +41,8 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
       <div className="mt-4">
         <h4 className="font-medium">Options:</h4>
         <ul className="list-disc pl-5 space-y-1">
-          {options.map((option, index) => (
-            <li key={index} className={option.isCorrect ? "text-green-600 font-medium" : ""}>
+          {options.map(option => (
+            <li key={option.id} className={option.isCorrect ? "text-green-600 font-medium" : ""}>
               {option.text}
               {option.isCorrect && " (Correct)"}
             </li>
@@ -69,7 +69,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
     );
   };
 
-  const renderChildQuestions = (children: Question[] | undefined) => {
+  const renderChildQuestions = (children: Question[]) => {
     if (!children || children.length === 0) return null;
 
     return (
@@ -165,7 +165,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
         {question.hasChild && (
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <CollapsibleContent>
-              {renderChildQuestions(question.childQuestions)}
+              {renderChildQuestions(question.childQuestions || [])}
             </CollapsibleContent>
           </Collapsible>
         )}

@@ -1,475 +1,315 @@
 
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { toast } from "@/components/ui/use-toast";
-import {
-  Question,
-  EvaluationRubric,
-  Option,
-} from "@/services/api";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import MCQOptions from "@/components/MCQOptions";
+import EvaluationRubric from "@/components/EvaluationRubric";
+import SyllabusMapping from "@/components/SyllabusMapping";
+import ImageUpload from "@/components/ImageUpload";
+import { Option, Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
+import { toast } from "@/hooks/use-toast";
 
-const formSchema = z.object({
-  questionTitle: z.string().min(2, {
-    message: "Question title must be at least 2 characters.",
-  }),
-  questionType: z.array(z.enum(["SUBJECTIVE", "OBJECTIVE"])).min(1, {
-    message: "You have to select at least one question type.",
-  }),
+const questionSchema = z.object({
+  questionTitle: z.string().min(1, "Question title is required"),
+  marks: z.number().min(1, "Marks must be at least 1"),
   difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
-  marks: z.number().min(1, {
-    message: "Marks must be at least 1.",
-  }),
+  questionType: z.enum(["SINGLE_CORRECT_MCQ", "MULTIPLE_CORRECT_MCQ", "SUBJECTIVE"]),
   options: z.array(
     z.object({
-      text: z.string(),
+      id: z.string(),
+      text: z.string().min(1, "Option text is required"),
       isCorrect: z.boolean(),
     })
-  ),
+  ).optional(),
   evaluationRubric: z.array(
     z.object({
-      criterion: z.string(),
-      weight: z.number(),
-      keywordHints: z.array(z.string()),
+      criterion: z.string().min(1, "Criterion is required"),
+      weight: z.number().min(1, "Weight must be at least 1"),
     })
-  ),
+  ).optional(),
+  source: z.enum(["AI_GENERATED", "USER_GENERATED"]),
+  images: z.array(z.string()).default([]),
+  syllabusMapping: z.object({
+    board: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+    class: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+    subject: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+    chapter: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+      })
+    ),
+    topic: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+      })
+    ),
+  }),
+  parentId: z.string().optional(),
 });
 
+type QuestionFormData = z.infer<typeof questionSchema>;
+
 interface IndividualQuestionFormProps {
-  onSubmit: (data: z.infer<typeof formSchema>) => void;
-  initialValues?: Partial<Question>;
   parentId?: string;
   onSuccess?: () => void;
 }
 
-const defaultQuestion: Partial<Question> = {
-  questionTitle: "",
-  images: [],
-  difficulty: "MEDIUM",
-  questionType: ["SUBJECTIVE"],
-  marks: 1,
-  options: [],
-  source: "USER_GENERATED",
-  evaluationRubric: [{ criterion: "", weight: 0, keywordHints: [] }],
-  createdBy: {
-    id: "teacher1",
-    name: "Sahil Bin Asif",
-  },
-};
-
-const IndividualQuestionForm = ({
-  onSubmit,
-  initialValues = defaultQuestion,
-  parentId,
-  onSuccess,
-}: IndividualQuestionFormProps) => {
-  const [open, setOpen] = useState(false);
-  const [questionType, setQuestionType] = useState<("SUBJECTIVE" | "OBJECTIVE")[]>(
-    initialValues?.questionType || ["SUBJECTIVE"]
-  );
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+const IndividualQuestionForm = ({ parentId, onSuccess }: IndividualQuestionFormProps) => {
+  const form = useForm<QuestionFormData>({
+    resolver: zodResolver(questionSchema),
     defaultValues: {
-      questionTitle: initialValues?.questionTitle || "",
-      questionType: initialValues?.questionType || ["SUBJECTIVE"],
-      difficulty: initialValues?.difficulty || "MEDIUM",
-      marks: initialValues?.marks || 1,
-      options: initialValues?.options || [],
-      evaluationRubric: initialValues?.evaluationRubric || [
-        { criterion: "", weight: 0, keywordHints: [] },
-      ],
+      questionTitle: "",
+      marks: 1,
+      difficulty: "MEDIUM",
+      questionType: "SUBJECTIVE",
+      options: [],
+      evaluationRubric: [],
+      source: "USER_GENERATED",
+      images: [],
+      parentId: parentId,
     },
   });
 
+  const questionType = form.watch("questionType");
+  const isMCQ = questionType === "SINGLE_CORRECT_MCQ" || questionType === "MULTIPLE_CORRECT_MCQ";
+  const isMultipleChoice = questionType === "MULTIPLE_CORRECT_MCQ";
+
   useEffect(() => {
-    form.reset({
-      questionTitle: initialValues?.questionTitle || "",
-      questionType: initialValues?.questionType || ["SUBJECTIVE"],
-      difficulty: initialValues?.difficulty || "MEDIUM",
-      marks: initialValues?.marks || 1,
-      options: initialValues?.options || [],
-      evaluationRubric: initialValues?.evaluationRubric || [
-        { criterion: "", weight: 0, keywordHints: [] },
-      ],
-    });
-    setQuestionType(initialValues?.questionType || ["SUBJECTIVE"]);
-  }, [initialValues, form]);
-
-  const handleQuestionTypeChange = (value: ("SUBJECTIVE" | "OBJECTIVE")[]) => {
-    setQuestionType(value);
-    form.setValue("questionType", value);
-  };
-
-  const addOption = () => {
-    form.setValue("options", [...form.getValues("options"), { text: "", isCorrect: false }]);
-  };
-
-  const removeOption = (index: number) => {
-    const options = [...form.getValues("options")];
-    options.splice(index, 1);
-    form.setValue("options", options);
-  };
-
-  const addRubricItem = () => {
-    form.setValue("evaluationRubric", [
-      ...form.getValues("evaluationRubric"),
-      { criterion: "", weight: 0, keywordHints: [] },
-    ]);
-  };
-
-  const removeRubricItem = (index: number) => {
-    const rubric = [...form.getValues("evaluationRubric")];
-    rubric.splice(index, 1);
-    form.setValue("evaluationRubric", rubric);
-  };
-
-  const onSubmitHandler = (values: z.infer<typeof formSchema>) => {
-    if (onSubmit) {
-      onSubmit(values);
+    // Reset options or evaluation rubric when question type changes
+    if (isMCQ) {
+      form.setValue("evaluationRubric", []);
+    } else {
+      form.setValue("options", []);
     }
-    if (onSuccess) {
-      onSuccess();
+  }, [questionType, form]);
+
+  const onSubmit = async (data: QuestionFormData) => {
+    try {
+      const teacher = getLoggedInTeacher();
+      if (!teacher) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to create questions",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare the question data
+      const questionData: Partial<Question> = {
+        ...data,
+        createdBy: teacher,
+        questionType: [data.questionType],
+        // Ensure options have required properties
+        options: data.options?.map(opt => ({
+          id: opt.id || '',
+          text: opt.text || '',
+          isCorrect: opt.isCorrect || false
+        }))
+      };
+
+      // Submit based on question type
+      let response;
+      if (isMCQ) {
+        // Validate that at least one option is marked as correct
+        const hasCorrectOption = data.options?.some(option => option.isCorrect);
+        if (!hasCorrectOption) {
+          toast({
+            title: "Error",
+            description: "At least one option must be marked as correct",
+            variant: "destructive",
+          });
+          return;
+        }
+        response = await createMCQQuestion(questionData);
+      } else {
+        // Validate that at least one evaluation criterion is added
+        if (!data.evaluationRubric || data.evaluationRubric.length === 0) {
+          toast({
+            title: "Error",
+            description: "At least one evaluation criterion must be added",
+            variant: "destructive",
+          });
+          return;
+        }
+        response = await createSubjectiveQuestion(questionData);
+      }
+
+      toast({
+        title: "Success",
+        description: "Question created successfully",
+      });
+      
+      // Reset the form
+      form.reset({
+        questionTitle: "",
+        marks: 1,
+        difficulty: "MEDIUM",
+        questionType: "SUBJECTIVE",
+        options: [],
+        evaluationRubric: [],
+        source: "USER_GENERATED",
+        images: [],
+        parentId: parentId,
+      });
+
+      // Call the success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Error creating question:", error);
     }
-    toast({
-      title: "Question created successfully!",
-      description: "Your question has been saved.",
-    });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          {initialValues?.questionTitle ? "Edit Question" : "Create Question"}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[825px]">
-        <DialogHeader>
-          <DialogTitle>
-            {initialValues?.questionTitle ? "Edit Question" : "Create Question"}
-          </DialogTitle>
-          <DialogDescription>
-            Make changes to your question here. Click save when you're done.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmitHandler)}
-            className="space-y-4"
-          >
-            <FormField
-              control={form.control}
-              name="questionTitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Question Title</FormLabel>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="questionTitle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Question Title</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Enter your question here..." {...field} className="min-h-24" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="marks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Marks</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    {...field} 
+                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="difficulty"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Difficulty</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <Input placeholder="Enter question title" {...field} />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select difficulty" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex items-center space-x-2">
-              <FormField
-                control={form.control}
-                name="questionType"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Question Type</FormLabel>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge
-                        variant={
-                          questionType.includes("SUBJECTIVE") ? "default" : "secondary"
-                        }
-                        onClick={() => {
-                          const includes = questionType.includes("SUBJECTIVE");
-                          const newTypes = includes
-                            ? questionType.filter((type) => type !== "SUBJECTIVE")
-                            : [...questionType, "SUBJECTIVE"];
-                          handleQuestionTypeChange(newTypes);
-                        }}
-                        className="cursor-pointer"
-                      >
-                        Subjective
-                      </Badge>
-                      <Badge
-                        variant={
-                          questionType.includes("OBJECTIVE") ? "default" : "secondary"
-                        }
-                        onClick={() => {
-                          const includes = questionType.includes("OBJECTIVE");
-                          const newTypes = includes
-                            ? questionType.filter((type) => type !== "OBJECTIVE")
-                            : [...questionType, "OBJECTIVE"];
-                          handleQuestionTypeChange(newTypes);
-                        }}
-                        className="cursor-pointer"
-                      >
-                        Objective
-                      </Badge>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="difficulty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Difficulty</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select difficulty" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="EASY">Easy</SelectItem>
-                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                        <SelectItem value="HARD">Hard</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="marks"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Marks</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter marks"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {questionType.includes("OBJECTIVE") && (
-              <>
-                <FormLabel>Options</FormLabel>
-                <FormDescription>
-                  Add options for the question. Mark the correct option(s).
-                </FormDescription>
-                <Accordion type="multiple">
-                  {form.watch("options").map((option, index) => (
-                    <AccordionItem value={String(index)} key={index}>
-                      <AccordionTrigger>Option {index + 1}</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="grid gap-4">
-                          <FormField
-                            control={form.control}
-                            name={`options.${index}.text`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Text</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="Enter option text"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`options.${index}.isCorrect`}
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                  <FormLabel className="text-sm">
-                                    Is Correct?
-                                  </FormLabel>
-                                  <FormDescription>
-                                    Mark if this option is correct.
-                                  </FormDescription>
-                                </div>
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => removeOption(index)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Remove
-                          </Button>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-
-                <Button type="button" onClick={addOption}>
-                  Add Option
-                </Button>
-              </>
+                  <SelectContent>
+                    <SelectItem value="EASY">Easy</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HARD">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )}
+          />
 
-            {questionType.includes("SUBJECTIVE") && (
-              <>
-                <FormLabel>Evaluation Rubric</FormLabel>
-                <FormDescription>
-                  Add criteria for evaluating the question.
-                </FormDescription>
-                <Accordion type="multiple">
-                  {form.watch("evaluationRubric").map((rubricItem, index) => (
-                    <AccordionItem value={String(index)} key={index}>
-                      <AccordionTrigger>Criterion {index + 1}</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="grid gap-4">
-                          <FormField
-                            control={form.control}
-                            name={`evaluationRubric.${index}.criterion`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Criterion</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="Enter criterion"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`evaluationRubric.${index}.weight`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    placeholder="Enter weight"
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`evaluationRubric.${index}.keywordHints`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Keyword Hints</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="Enter keyword hints (comma separated)"
-                                    value={field.value.join(', ')}
-                                    onChange={(e) => field.onChange(e.target.value.split(',').map(item => item.trim()))}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => removeRubricItem(index)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Remove
-                          </Button>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-
-                <Button type="button" onClick={addRubricItem}>
-                  Add Criterion
-                </Button>
-              </>
+          <FormField
+            control={form.control}
+            name="questionType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Question Type</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select question type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="SINGLE_CORRECT_MCQ">Single Correct MCQ</SelectItem>
+                    <SelectItem value="MULTIPLE_CORRECT_MCQ">Multiple Correct MCQ</SelectItem>
+                    <SelectItem value="SUBJECTIVE">Subjective</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )}
+          />
+        </div>
 
-            <DialogFooter>
-              <Button type="submit">Save changes</Button>
-              <DialogClose asChild>
-                <Button type="button" variant="secondary">
-                  Cancel
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        <FormField
+          control={form.control}
+          name="source"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Source</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select source" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="USER_GENERATED">User Generated</SelectItem>
+                  <SelectItem value="AI_GENERATED">AI Generated</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="images"
+          render={() => (
+            <FormItem>
+              <FormLabel>Images</FormLabel>
+              <FormControl>
+                <ImageUpload fieldName="images" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {isMCQ && <MCQOptions control={form.control} isMultipleChoice={isMultipleChoice} />}
+
+        {!isMCQ && <EvaluationRubric control={form.control} />}
+
+        <SyllabusMapping control={form.control} />
+
+        <Button type="submit" className="w-full">
+          Create Question
+        </Button>
+      </form>
+    </Form>
   );
 };
 
