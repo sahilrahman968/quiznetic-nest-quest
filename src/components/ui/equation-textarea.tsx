@@ -4,7 +4,7 @@ import { addStyles, EditableMathField, StaticMathField } from 'react-mathquill';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Sigma, Pi, SquareRoot, Function, Brackets, Parentheses } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 // Initialize MathQuill
@@ -93,7 +93,7 @@ const EquationTextarea = React.forwardRef<HTMLTextAreaElement, EquationTextareaP
                 size="sm"
                 onClick={() => setIsEquationMode(true)}
               >
-                <Sigma className="h-4 w-4 mr-2" />
+                <ArrowRight className="h-4 w-4 mr-2" />
                 Add Equation
               </Button>
             </div>
@@ -102,22 +102,22 @@ const EquationTextarea = React.forwardRef<HTMLTextAreaElement, EquationTextareaP
           <div className="border rounded-md p-4 space-y-4">
             <div className="flex flex-wrap gap-2 mb-2">
               <Button type="button" variant="outline" size="sm" onClick={() => insertTemplate('\\frac{a}{b}')}>
-                <Function className="h-4 w-4 mr-1" /> Fraction
+                Fraction
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={() => insertTemplate('\\sqrt{x}')}>
-                <SquareRoot className="h-4 w-4 mr-1" /> Square Root
+                Square Root
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={() => insertTemplate('\\sum_{i=0}^{n}')}>
-                <Sigma className="h-4 w-4 mr-1" /> Summation
+                Summation
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={() => insertTemplate('\\prod_{i=0}^{n}')}>
-                <Pi className="h-4 w-4 mr-1" /> Product
+                Product
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={() => insertTemplate('\\left(\\right)')}>
-                <Parentheses className="h-4 w-4 mr-1" /> Parentheses
+                Parentheses
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={() => insertTemplate('\\left[\\right]')}>
-                <Brackets className="h-4 w-4 mr-1" /> Brackets
+                Brackets
               </Button>
             </div>
 
