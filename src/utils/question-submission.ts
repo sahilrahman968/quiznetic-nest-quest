@@ -2,6 +2,7 @@
 import { Question, createMCQQuestion, createSubjectiveQuestion, getLoggedInTeacher } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import { QuestionFormData } from "@/hooks/use-question-form";
+import { SyllabusItem } from "@/types/questionPaper";
 
 export const handleQuestionSubmission = async (
   data: QuestionFormData, 
@@ -32,8 +33,16 @@ export const handleQuestionSubmission = async (
         id: data.syllabusMapping.subject.id,
         name: data.syllabusMapping.subject.name,
       },
-      chapter: data.syllabusMapping.chapter,
-      topic: data.syllabusMapping.topic,
+      // Ensure chapter array items have required id and name properties
+      chapter: data.syllabusMapping.chapter?.map(ch => ({
+        id: ch.id,
+        name: ch.name
+      })) as SyllabusItem[],
+      // Ensure topic array items have required id and name properties
+      topic: data.syllabusMapping.topic?.map(t => ({
+        id: t.id,
+        name: t.name
+      })) as SyllabusItem[],
     };
 
     // Prepare the question data with properly typed evaluation rubric
