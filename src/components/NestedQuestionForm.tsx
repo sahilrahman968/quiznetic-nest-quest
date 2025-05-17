@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { EquationTextarea } from "@/components/ui/equation-textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Question, createParentQuestion, getLoggedInTeacher } from "@/services/api";
@@ -92,7 +93,7 @@ const NestedQuestionForm = () => {
                   <FormItem>
                     <FormLabel>Parent Question Title</FormLabel>
                     <FormControl>
-                      <EquationTextarea placeholder="Enter the parent question here..." {...field} />
+                      <Textarea placeholder="Enter the parent question here..." {...field} className="min-h-24" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
