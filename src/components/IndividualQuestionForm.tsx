@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { EquationTextarea } from "@/components/ui/equation-textarea";
 import MCQOptions from "@/components/MCQOptions";
 import EvaluationRubric from "@/components/EvaluationRubric";
 import SyllabusMapping from "@/components/SyllabusMapping";
@@ -119,9 +119,28 @@ const IndividualQuestionForm = ({ parentId, onSubmit, onSuccess }: IndividualQue
         return;
       }
 
+      // Ensure syllabusMapping is properly formatted to match the required type
+      const formattedSyllabusMapping = {
+        board: {
+          id: data.syllabusMapping.board.id,
+          name: data.syllabusMapping.board.name,
+        },
+        class: {
+          id: data.syllabusMapping.class.id,
+          name: data.syllabusMapping.class.name,
+        },
+        subject: {
+          id: data.syllabusMapping.subject.id,
+          name: data.syllabusMapping.subject.name,
+        },
+        chapter: data.syllabusMapping.chapter,
+        topic: data.syllabusMapping.topic,
+      };
+
       // Prepare the question data with properly typed evaluation rubric
       const questionData: Partial<Question> = {
         ...data,
+        syllabusMapping: formattedSyllabusMapping,
         createdBy: teacher,
         questionType: [data.questionType],
         // Ensure options have required properties
@@ -207,7 +226,7 @@ const IndividualQuestionForm = ({ parentId, onSubmit, onSuccess }: IndividualQue
             <FormItem>
               <FormLabel>Question Title</FormLabel>
               <FormControl>
-                <Textarea placeholder="Enter your question here..." {...field} className="min-h-24" />
+                <EquationTextarea placeholder="Enter your question here..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
